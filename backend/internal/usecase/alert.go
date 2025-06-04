@@ -4,23 +4,28 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/nomenarkt/medicine-tracker/backend/internal/infra/airtable"
-	"github.com/nomenarkt/medicine-tracker/backend/internal/infra/telegram"
+	"github.com/nomenarkt/medicine-tracker/backend/internal/domain/ports"
 	"github.com/nomenarkt/medicine-tracker/backend/internal/logic/forecast"
 	"github.com/nomenarkt/medicine-tracker/backend/internal/logic/stockcalc"
 )
 
 const stockThreshold = 10.0
 
-// CheckAndAlertLowStock scans medicines and alerts if below threshold
-func CheckAndAlertLowStock() error {
+// StockChecker handles alerting when stock is low.
+type StockChecker struct {
+	Airtable ports.AirtableService
+	Telegram ports.TelegramService
+}
+
+// CheckAndAlertLowStock scans medicines and alerts if below threshold.
+func (s *StockChecker) CheckAndAlertLowStock() error {
 	now := time.Now().UTC()
 
-	meds, err := airtable.FetchMedicines()
+	meds, err := s.Airtable.FetchMedicines()
 	if err != nil {
 		return fmt.Errorf("fetch medicines failed: %w", err)
 	}
-	entries, err := airtable.FetchStockEntries()
+	entries, err := s.Airtable.FetchStockEntries()
 	if err != nil {
 		return fmt.Errorf("fetch stock entries failed: %w", err)
 	}
@@ -33,26 +38,28 @@ func CheckAndAlertLowStock() error {
 				stock,
 				stockcalc.OutOfStockDateAt(m, stock, now).Format("Jan 2"),
 			)
-			_ = telegram.SendTelegramMessage(alert)
+			_ = s.Telegram.SendTelegramMessage(alert)
 		}
 	}
 
 	return nil
 }
 
-// OutOfStockService wraps forecast generator for Telegram/HTTP reuse
-type OutOfStockService struct{}
+// OutOfStockService wraps forecast generation logic.
+type OutOfStockService struct {
+	Airtable ports.StockDataPort
+}
 
-func (OutOfStockService) GenerateOutOfStockForecastMessage() (string, error) {
-
-	meds, err := airtable.FetchMedicines()
+// GenerateOutOfStockForecastMessage returns a summary of stock depletion.
+func (s OutOfStockService) GenerateOutOfStockForecastMessage() (string, error) {
+	meds, err := s.Airtable.FetchMedicines()
 	if err != nil {
 		return "", fmt.Errorf("fetch medicines failed: %w", err)
 	}
-	entries, err := airtable.FetchStockEntries()
+	entries, err := s.Airtable.FetchStockEntries()
 	if err != nil {
 		return "", fmt.Errorf("fetch stock entries failed: %w", err)
 	}
 
-	return forecast.GenerateOutOfStockForecastMessage(meds, entries), nil
+	return forecast.GenerateOutOfStockForecastMessage(meds, entries, time.Now().UTC(), s.Airtable), nil
 }

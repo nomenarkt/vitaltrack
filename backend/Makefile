@@ -7,3 +7,11 @@ run:
 
 test:
 	go test ./...
+
+lint:
+	@echo "==> Running linters..."
+	@if command -v golangci-lint > /dev/null; then \
+		golangci-lint run ./... ; \
+	else \
+		./bin/golangci-lint run ./... ; \
+	fi

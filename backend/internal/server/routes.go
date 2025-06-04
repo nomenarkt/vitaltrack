@@ -8,18 +8,23 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/nomenarkt/medicine-tracker/backend/internal/domain"
-	"github.com/nomenarkt/medicine-tracker/backend/internal/infra/airtable"
-	"github.com/nomenarkt/medicine-tracker/backend/internal/infra/telegram"
+	"github.com/nomenarkt/medicine-tracker/backend/internal/domain/ports"
 	"github.com/nomenarkt/medicine-tracker/backend/internal/logic/stockcalc"
 	"github.com/nomenarkt/medicine-tracker/backend/internal/usecase"
 )
 
-func SetupRoutes(app *fiber.App) {
+func SetupRoutes(
+	app *fiber.App,
+	checker *usecase.StockChecker,
+	forecastSvc usecase.OutOfStockService,
+	dataPort ports.StockDataPort,
+	telegramClient ports.TelegramService,
+) {
 	const stockThreshold = 10.0
 	allowEntryPost := os.Getenv("ENABLE_ENTRY_POST") == "true"
 
 	app.Get("/debug/medicines", func(c *fiber.Ctx) error {
-		meds, err := airtable.FetchMedicines()
+		meds, err := dataPort.FetchMedicines()
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 		}
@@ -27,7 +32,7 @@ func SetupRoutes(app *fiber.App) {
 	})
 
 	app.Get("/debug/entries", func(c *fiber.Ctx) error {
-		entries, err := airtable.FetchStockEntries()
+		entries, err := dataPort.FetchStockEntries()
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 		}
@@ -38,11 +43,11 @@ func SetupRoutes(app *fiber.App) {
 		id := c.Params("id")
 		now := time.Now().UTC()
 
-		meds, err := airtable.FetchMedicines()
+		meds, err := dataPort.FetchMedicines()
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 		}
-		entries, err := airtable.FetchStockEntries()
+		entries, err := dataPort.FetchStockEntries()
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 		}
@@ -67,7 +72,7 @@ func SetupRoutes(app *fiber.App) {
 				stock,
 				stockcalc.OutOfStockDateAt(*m, stock, now).Format("Jan 2, 2006"),
 			)
-			_ = telegram.SendTelegramMessage(alert)
+			_ = telegramClient.SendTelegramMessage(alert)
 		}
 
 		return c.JSON(fiber.Map{
@@ -76,14 +81,17 @@ func SetupRoutes(app *fiber.App) {
 			"current_stock":     stock,
 			"out_of_stock_date": stockcalc.OutOfStockDateAt(*m, stock, now).Format("2006-01-02"),
 		})
-
 	})
 
 	app.Get("/debug/outofstock", func(c *fiber.Ctx) error {
-		if err := telegram.HandleOutOfStockCommand(); err != nil {
+		msg, err := forecastSvc.GenerateOutOfStockForecastMessage()
+		if err != nil {
 			return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 		}
-		return c.JSON(fiber.Map{"message": "telegram out-of-stock summary sent"})
+		if err := telegramClient.SendTelegramMessage(msg); err != nil {
+			return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+		}
+		return c.JSON(fiber.Map{"message": "out-of-stock forecast sent"})
 	})
 
 	if allowEntryPost {
@@ -111,7 +119,7 @@ func SetupRoutes(app *fiber.App) {
 				Unit:       req.Unit,
 				Date:       parsedDate,
 			}
-			if err := airtable.CreateStockEntry(entry); err != nil {
+			if err := dataPort.CreateStockEntry(entry); err != nil {
 				return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 			}
 			return c.Status(201).JSON(fiber.Map{"message": "stock entry created"})
@@ -119,7 +127,7 @@ func SetupRoutes(app *fiber.App) {
 	}
 
 	app.Get("/debug/check-low-stock", func(c *fiber.Ctx) error {
-		if err := usecase.CheckAndAlertLowStock(); err != nil {
+		if err := checker.CheckAndAlertLowStock(); err != nil {
 			return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 		}
 		return c.JSON(fiber.Map{"message": "low stock check completed"})

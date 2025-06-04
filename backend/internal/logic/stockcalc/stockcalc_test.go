@@ -8,7 +8,36 @@ import (
 	"github.com/nomenarkt/medicine-tracker/backend/internal/logic/stockcalc"
 )
 
-func TestCurrentStockAt_WithRefills(t *testing.T) {
+func TestCurrentStockAt_WithRefillOnToday(t *testing.T) {
+	now := time.Date(2025, 6, 4, 0, 0, 0, 0, time.UTC)
+
+	med := domain.Medicine{
+		ID:           "med123",
+		Name:         "Paracetamol",
+		StartDate:    "2025-06-01",
+		InitialStock: 10,
+		DailyDose:    1,
+		UnitPerBox:   10,
+	}
+
+	entries := []domain.StockEntry{
+		{
+			MedicineID: "med123",
+			Quantity:   1,
+			Unit:       "box",
+			Date:       now,
+		},
+	}
+
+	got := stockcalc.CurrentStockAt(med, entries, now)
+	want := float64(10 - 3 + 10) // used 3 doses (June 2,3,4) + 1 box refill
+
+	if got != want {
+		t.Errorf("Expected stock %.2f, got %.2f", want, got)
+	}
+}
+
+func TestCurrentStockAt_WithMultipleEntryDates(t *testing.T) {
 	med := domain.Medicine{
 		ID:           "med1",
 		Name:         "TestMed",
@@ -36,15 +65,18 @@ func TestCurrentStockAt_WithRefills(t *testing.T) {
 }
 
 func TestOutOfStockDateAt(t *testing.T) {
+	now := time.Date(2025, 6, 4, 0, 0, 0, 0, time.UTC)
+
 	med := domain.Medicine{
-		DailyDose: 2.0,
+		ID:        "med123",
+		DailyDose: 2,
 	}
 
-	today := time.Date(2025, 6, 4, 0, 0, 0, 0, time.UTC)
-	date := stockcalc.OutOfStockDateAt(med, 6.0, today)
+	stock := 10.0
+	got := stockcalc.OutOfStockDateAt(med, stock, now)
+	want := now.AddDate(0, 0, 5)
 
-	expected := today.AddDate(0, 0, 3)
-	if !date.Equal(expected) {
-		t.Errorf("Expected %s, got %s", expected.Format("2006-01-02"), date.Format("2006-01-02"))
+	if !got.Equal(want) {
+		t.Errorf("Expected out-of-stock date %v, got %v", want, got)
 	}
 }

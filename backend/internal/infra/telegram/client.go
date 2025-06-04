@@ -1,8 +1,8 @@
-// File: internal/infra/telegram/client.go
 package telegram
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -10,36 +10,40 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func loadEnv() {
-	_ = godotenv.Load()
+type Client struct {
+	Token  string
+	ChatID string
 }
 
-func SendTelegramMessage(msg string) error {
-	loadEnv()
+func NewClient() *Client {
+	_ = godotenv.Load()
+	return &Client{
+		Token:  os.Getenv("TELEGRAM_TOKEN"),
+		ChatID: os.Getenv("TELEGRAM_CHAT_ID"),
+	}
+}
 
-	token := os.Getenv("TELEGRAM_BOT_TOKEN")
-	chatID := os.Getenv("TELEGRAM_CHAT_ID")
-	if token == "" || chatID == "" {
-		return fmt.Errorf("missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID")
+func (c *Client) SendTelegramMessage(msg string) error {
+	payload := map[string]string{
+		"chat_id":    c.ChatID,
+		"text":       msg,
+		"parse_mode": "Markdown",
 	}
 
-	url := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", token)
-	payload := []byte(fmt.Sprintf(`{"chat_id": "%s", "text": "%s"}`, chatID, msg))
+	body, _ := json.Marshal(payload)
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Content-Type", "application/json")
-
-	res, err := http.DefaultClient.Do(req)
+	res, err := http.Post(
+		"https://api.telegram.org/bot"+c.Token+"/sendMessage",
+		"application/json",
+		bytes.NewReader(body),
+	)
 	if err != nil {
 		return err
 	}
 	defer res.Body.Close()
 
 	if res.StatusCode >= 300 {
-		return fmt.Errorf("telegram API error: status %d", res.StatusCode)
+		return fmt.Errorf("telegram error status: %d", res.StatusCode)
 	}
 
 	return nil

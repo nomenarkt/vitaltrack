@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  test-build:
+  test-build-lint:
     runs-on: ubuntu-latest
 
     defaults:
@@ -21,7 +21,7 @@ jobs:
       - name: 🛠️ Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.24'
+          go-version: '1.24.1'
 
       - name: 🔍 Cache Go modules
         uses: actions/cache@v3
@@ -32,8 +32,16 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: ${{ runner.os }}-go-
 
-      - name: ✅ Run tests
+      - name: ✅ Run unit tests
         run: go test ./...
 
-      - name: 🧱 Check build
+      - name: 🧱 Build binary
         run: go build ./...
+
+      - name: 🧹 Install golangci-lint
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
+          | sh -s -- -b ./bin v1.64.8
+
+      - name: 🧹 Run golangci-lint
+        run: ./bin/golangci-lint run
