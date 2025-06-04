@@ -110,14 +110,19 @@ func SetupRoutes(
 
 			parsedDate, err := time.Parse("2006-01-02", req.Date)
 			if err != nil {
-				return c.Status(400).JSON(fiber.Map{"error": "invalid date format, expected YYYY-MM-DD"})
+				parsedDate, err = time.Parse(time.RFC3339, req.Date)
+				if err != nil {
+					return c.Status(400).JSON(fiber.Map{
+						"error": "invalid date format, expected YYYY-MM-DD or RFC3339",
+					})
+				}
 			}
 
 			entry := domain.StockEntry{
 				MedicineID: id,
 				Quantity:   req.Quantity,
 				Unit:       req.Unit,
-				Date:       parsedDate,
+				Date:       domain.FlexibleDate{Time: parsedDate},
 			}
 			if err := dataPort.CreateStockEntry(entry); err != nil {
 				return c.Status(500).JSON(fiber.Map{"error": err.Error()})

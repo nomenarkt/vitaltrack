@@ -18,7 +18,7 @@ func (m *mockStockDataPort) FetchMedicines() ([]domain.Medicine, error) {
 			Name:         "Paracetamol",
 			InitialStock: 10,
 			DailyDose:    1,
-			StartDate:    "2025-06-01",
+			StartDate:    domain.NewFlexibleDate(time.Date(2025, 6, 1, 0, 0, 0, 0, time.UTC)),
 			UnitPerBox:   10,
 		},
 	}, nil

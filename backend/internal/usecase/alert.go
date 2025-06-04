@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/nomenarkt/medicine-tracker/backend/internal/domain/ports"
@@ -20,25 +21,39 @@ type StockChecker struct {
 // CheckAndAlertLowStock scans medicines and alerts if below threshold.
 func (s *StockChecker) CheckAndAlertLowStock() error {
 	now := time.Now().UTC()
+	log.Println("📡 Starting CheckAndAlertLowStock...")
 
 	meds, err := s.Airtable.FetchMedicines()
 	if err != nil {
 		return fmt.Errorf("fetch medicines failed: %w", err)
 	}
+	log.Printf("📋 Fetched %d medicines", len(meds))
+
 	entries, err := s.Airtable.FetchStockEntries()
 	if err != nil {
 		return fmt.Errorf("fetch stock entries failed: %w", err)
 	}
+	log.Printf("📦 Fetched %d stock entries", len(entries))
 
 	for _, m := range meds {
 		stock := stockcalc.CurrentStockAt(m, entries, now)
+		log.Printf("🧪 %s: %.2f pills left", m.Name, stock)
+
 		if stock < stockThreshold {
 			alert := fmt.Sprintf("⚠️ *%s* is low:\n%.2f pills left.\nRefill before %s.",
 				m.Name,
 				stock,
-				stockcalc.OutOfStockDateAt(m, stock, now).Format("Jan 2"),
+				stockcalc.OutOfStockDateAt(m, stock, now).Format("2006-01-02"),
 			)
-			_ = s.Telegram.SendTelegramMessage(alert)
+
+			log.Printf("📲 Sending alert for %s", m.Name)
+			err := s.Telegram.SendTelegramMessage(alert)
+			if err != nil {
+				log.Printf("❌ Telegram send failed: %v", err)
+			} else {
+				log.Println("✅ Telegram message sent")
+			}
+
 		}
 	}
 

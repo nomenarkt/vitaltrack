@@ -2,6 +2,7 @@ package usecase_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/nomenarkt/medicine-tracker/backend/internal/domain"
 	"github.com/nomenarkt/medicine-tracker/backend/internal/usecase"
@@ -28,6 +29,10 @@ func (m *mockTelegram) SendTelegramMessage(msg string) error {
 	return nil
 }
 
+func (m *mockTelegram) PollForCommands(fetchData func() ([]domain.Medicine, []domain.StockEntry, error)) {
+	// noop for test
+}
+
 func TestCheckAndAlertLowStock(t *testing.T) {
 
 	at := mockAirtable{
@@ -35,7 +40,7 @@ func TestCheckAndAlertLowStock(t *testing.T) {
 			{
 				ID:           "low1",
 				Name:         "LowMed",
-				StartDate:    "2025-06-01",
+				StartDate:    domain.NewFlexibleDate(time.Date(2025, 6, 1, 0, 0, 0, 0, time.UTC)),
 				InitialStock: 10,
 				DailyDose:    3,
 				UnitPerBox:   10,

@@ -1,0 +1,13 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/v0/.*/entries"
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "stockentries.json",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

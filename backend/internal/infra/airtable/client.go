@@ -45,7 +45,6 @@ func (c *Client) FetchMedicines() ([]domain.Medicine, error) {
 
 	body, _ := io.ReadAll(res.Body)
 
-	// Early Airtable error check
 	var errCheck map[string]interface{}
 	if json.Unmarshal(body, &errCheck) == nil {
 		if errVal, exists := errCheck["error"]; exists {
@@ -83,7 +82,6 @@ func (c *Client) FetchStockEntries() ([]domain.StockEntry, error) {
 
 	body, _ := io.ReadAll(res.Body)
 
-	// Airtable error check
 	var errCheck map[string]interface{}
 	if json.Unmarshal(body, &errCheck) == nil {
 		if errVal, exists := errCheck["error"]; exists {
@@ -115,7 +113,7 @@ func (c *Client) CreateStockEntry(entry domain.StockEntry) error {
 			"medicine_id": []string{entry.MedicineID},
 			"quantity":    entry.Quantity,
 			"unit":        entry.Unit,
-			"date":        entry.Date,
+			"date":        entry.Date.Format("2006-01-02"),
 		},
 	}
 
@@ -147,7 +145,7 @@ func (c *Client) UpdateForecastDate(medicineID string, forecastDate, updatedAt t
 
 	payload := map[string]any{
 		"fields": map[string]any{
-			"forecast_out_of_stock_date": forecastDate.Format("2006-01-02"),
+			"forecast_out_of_stock_date": forecastDate.Format("2006-01-02"), // ✅ always date-only
 			"forecast_last_updated":      updatedAt.Format("2006-01-02"),
 		},
 	}

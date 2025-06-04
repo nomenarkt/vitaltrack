@@ -1,0 +1,13 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/v0/.*/medicines"
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "medicines.json",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

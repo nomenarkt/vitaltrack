@@ -13,6 +13,7 @@ type AirtableService interface {
 
 type TelegramService interface {
 	SendTelegramMessage(text string) error
+	PollForCommands(fetch func() ([]domain.Medicine, []domain.StockEntry, error))
 }
 
 type StockDataPort interface {

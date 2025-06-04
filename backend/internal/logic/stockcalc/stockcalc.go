@@ -14,10 +14,7 @@ import (
 func CurrentStockAt(m domain.Medicine, entries []domain.StockEntry, now time.Time) float64 {
 	stock := m.InitialStock
 
-	startDate, err := time.Parse("2006-01-02", m.StartDate)
-	if err != nil {
-		return stock // fallback to initial stock only
-	}
+	startDate := m.StartDate.Time // ✅ Use parsed time directly
 	startDate = startDate.UTC()
 	now = now.UTC()
 
@@ -32,7 +29,10 @@ func CurrentStockAt(m domain.Medicine, entries []domain.StockEntry, now time.Tim
 		if e.MedicineID != m.ID {
 			continue
 		}
-		if e.Date.Equal(now) {
+		if e.Date.IsZero() {
+			continue // skip unparsed or missing date entries
+		}
+		if e.Date.Year() == now.Year() && e.Date.YearDay() == now.YearDay() {
 			if e.Unit == "pill" {
 				stock += float64(e.Quantity)
 			} else {

@@ -1,0 +1,26 @@
+{
+  "records": [
+    {
+      "id": "recLow1",
+      "fields": {
+        "id": "low1",
+        "name": "Insulin",
+        "start_date": "2025-06-01",
+        "initial_stock": 10,
+        "daily_dose": 3,
+        "unit_per_box": 10
+      }
+    },
+    {
+      "id": "recOk1",
+      "fields": {
+        "id": "ok1",
+        "name": "Vitamin C",
+        "start_date": "2025-06-01",
+        "initial_stock": 50,
+        "daily_dose": 1,
+        "unit_per_box": 10
+      }
+    }
+  ]
+}

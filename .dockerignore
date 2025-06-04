@@ -1,0 +1,6 @@
+**/bin/
+**/vendor/
+**/.git
+*.log
+*.test
+.env
