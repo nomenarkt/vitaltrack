@@ -1,0 +1,26 @@
+# .gitignore
+# Go
+*.exe
+*.log
+*.out
+*.test
+*.swp
+*.DS_Store
+vendor/
+bin/
+
+# IDEs
+.vscode/
+.idea/
+
+# Node/JS (if frontend later)
+node_modules/
+dist/
+.env
+
+# OS
+Thumbs.db
+# Ignore backend secrets
+/backend/.env
+
+docs/
