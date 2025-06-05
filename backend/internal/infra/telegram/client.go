@@ -36,12 +36,15 @@ func NewClient() *Client {
 func (c *Client) SendTelegramMessage(msg string) error {
 	log.Printf("📨 Sending Telegram: %s", msg)
 
-	escaped := escapeMarkdown(msg)
+	escaped := msg
+	if !strings.Contains(msg, "```") {
+		escaped = escapeMarkdown(msg)
+	}
 
 	payload := map[string]string{
 		"chat_id":    c.ChatID,
 		"text":       escaped,
-		"parse_mode": "MarkdownV2", // Using V1, which needs basic escaping
+		"parse_mode": "MarkdownV2",
 	}
 
 	body, _ := json.Marshal(payload)
@@ -93,11 +96,10 @@ type GetUpdatesResponse struct {
 	Result []Update `json:"result"`
 }
 
-// PollForCommands runs in a loop and responds to /stock messages
 func (c *Client) PollForCommands(fetchData func() ([]domain.Medicine, []domain.StockEntry, error)) {
 	var lastUpdateID int
 
-	log.Println("📡 Telegram polling started...")
+	log.Println("📨 Telegram polling started...")
 	for {
 		time.Sleep(2 * time.Second)
 
@@ -128,7 +130,7 @@ func (c *Client) PollForCommands(fetchData func() ([]domain.Medicine, []domain.S
 func (c *Client) handleStockCommand(chatID int64, fetchData func() ([]domain.Medicine, []domain.StockEntry, error)) {
 	meds, entries, err := fetchData()
 	if err != nil {
-		_ = c.sendTo(chatID, "⚠️ Failed to fetch stock data.")
+		_ = c.sendTo(chatID, "\u26a0\ufe0f Failed to fetch stock data.")
 		return
 	}
 
@@ -148,25 +150,23 @@ func (c *Client) handleStockCommand(chatID int64, fetchData func() ([]domain.Med
 		rows = append(rows, Row{m.Name, date, stock})
 	}
 
-	// Sort by nearest date
 	sort.Slice(rows, func(i, j int) bool {
 		return rows[i].Date.Before(rows[j].Date)
 	})
 
-	// Build message
 	var lines []string
 	for _, r := range rows {
-		lines = append(lines, fmt.Sprintf("`%-22s → %s (%2d left)`", r.Name, r.Date.Format("2006-01-02"), r.Pills))
+		lines = append(lines, fmt.Sprintf("%-22s → %s (%2d left)", r.Name, r.Date.Format("2006-01-02"), r.Pills))
 	}
 
-	msg := "*Out\\-of\\-Stock Forecast*\n\n" + strings.Join(lines, "\n")
+	msg := "*Out-of-Stock Forecast*\n\n```text\n" + strings.Join(lines, "\n") + "\n```"
 	_ = c.sendTo(chatID, msg)
 }
 
 func (c *Client) sendTo(chatID int64, msg string) error {
 	payload := url.Values{}
 	payload.Set("chat_id", fmt.Sprintf("%d", chatID))
-	payload.Set("text", escapeMarkdown(msg))
+	payload.Set("text", msg)
 	payload.Set("parse_mode", "Markdown")
 
 	_, err := http.PostForm(

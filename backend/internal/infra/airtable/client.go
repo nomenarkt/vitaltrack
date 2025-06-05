@@ -169,3 +169,35 @@ func (c *Client) UpdateForecastDate(medicineID string, forecastDate, updatedAt t
 
 	return nil
 }
+
+func (c *Client) UpdateLastAlertedDate(medicineID string, date time.Time) error {
+	url := fmt.Sprintf("https://api.airtable.com/v0/%s/%s/%s",
+		os.Getenv("AIRTABLE_BASE_ID"),
+		os.Getenv("AIRTABLE_MEDICINES_TABLE"),
+		medicineID)
+
+	payload := map[string]any{
+		"fields": map[string]any{
+			"last_alerted_date": date.Format("2006-01-02"),
+		},
+	}
+
+	body, _ := json.Marshal(payload)
+
+	req, _ := http.NewRequest("PATCH", url, bytes.NewReader(body))
+	req.Header.Set("Authorization", "Bearer "+os.Getenv("AIRTABLE_TOKEN"))
+	req.Header.Set("Content-Type", "application/json")
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode >= 300 {
+		b, _ := io.ReadAll(res.Body)
+		return fmt.Errorf("airtable error: %s", string(b))
+	}
+
+	return nil
+}

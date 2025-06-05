@@ -1,23 +1,23 @@
 {
   "records": [
     {
-      "id": "recLow1",
+      "id": "recAlert1",
       "fields": {
-        "id": "low1",
-        "name": "Insulin",
+        "id": "alert1",
+        "name": "AlertMed",
         "start_date": "2025-06-01",
-        "initial_stock": 10,
-        "daily_dose": 3,
+        "initial_stock": 20,
+        "daily_dose": 2,
         "unit_per_box": 10
       }
     },
     {
-      "id": "recOk1",
+      "id": "recNoAlert1",
       "fields": {
         "id": "ok1",
-        "name": "Vitamin C",
+        "name": "NoAlertMed",
         "start_date": "2025-06-01",
-        "initial_stock": 50,
+        "initial_stock": 10,
         "daily_dose": 1,
         "unit_per_box": 10
       }

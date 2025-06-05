@@ -66,10 +66,10 @@ func GenerateOutOfStockForecastMessage(
 				fmt.Printf("🆗 Updated forecast for %s to %s\n", f.Name, f.ForecastDate.Format("2006-01-02"))
 			}
 		}
-		rows = append(rows, fmt.Sprintf("• %s → %s", f.Name, f.ForecastDate.Format("2006-01-02")))
+		rows = append(rows, fmt.Sprintf("%-22s → %s", f.Name, f.ForecastDate.Format("2006-01-02")))
 	}
 
-	return "*Out-of-Stock Forecast*\n\n" + stringJoin(rows, "\n")
+	return "*Out-of-Stock Forecast*\n\n```text\n" + stringJoin(rows, "\n") + "\n```"
 }
 
 // Helper for strings.Join without import clutter

@@ -1,4 +1,3 @@
-// File: internal/domain/models.go
 package domain
 
 type Medicine struct {
@@ -9,8 +8,9 @@ type Medicine struct {
 	DailyDose              float64       `json:"daily_dose"`
 	StartDate              FlexibleDate  `json:"start_date"` // supports RFC3339 + YYYY-MM-DD
 	InitialStock           float64       `json:"initial_stock"`
-	ForecastOutOfStockDate *FlexibleDate `json:"forecast_out_of_stock_date,omitempty"` // FIXED
-	ForecastLastUpdated    *FlexibleDate `json:"forecast_last_updated,omitempty"`      // FIXED
+	ForecastOutOfStockDate *FlexibleDate `json:"forecast_out_of_stock_date,omitempty"`
+	ForecastLastUpdated    *FlexibleDate `json:"forecast_last_updated,omitempty"`
+	LastAlertedDate        *FlexibleDate `json:"last_alerted_date,omitempty"`
 }
 
 type StockEntry struct {
@@ -18,5 +18,5 @@ type StockEntry struct {
 	MedicineID string       `json:"medicine_id"`
 	Quantity   int          `json:"quantity"`
 	Unit       string       `json:"unit"` // "box" or "pill"
-	Date       FlexibleDate `json:"date"` // supports RFC3339 + YYYY-MM-DD
+	Date       FlexibleDate `json:"date"`
 }

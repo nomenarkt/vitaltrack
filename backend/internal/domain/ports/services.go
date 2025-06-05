@@ -9,6 +9,7 @@ import (
 type AirtableService interface {
 	FetchMedicines() ([]domain.Medicine, error)
 	FetchStockEntries() ([]domain.StockEntry, error)
+	UpdateLastAlertedDate(medicineID string, date time.Time) error
 }
 
 type TelegramService interface {
