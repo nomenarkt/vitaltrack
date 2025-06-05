@@ -7,16 +7,8 @@ services:
     ports:
       - "8787:8787"
     env_file:
-      - .env
-    environment:
-      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
-      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
-      - AIRTABLE_BASE_ID=${AIRTABLE_BASE_ID}
-      - AIRTABLE_TOKEN=${AIRTABLE_TOKEN}
-      - AIRTABLE_MEDICINES_TABLE=${AIRTABLE_MEDICINES_TABLE}
-      - AIRTABLE_ENTRIES_TABLE=${AIRTABLE_ENTRIES_TABLE}
-      - ENABLE_ENTRY_POST=${ENABLE_ENTRY_POST}
-      - ENABLE_ALERT_TICKER=${ENABLE_ALERT_TICKER}
+      - ./backend/.env
+
     depends_on:
       - airtable-mock
     restart: on-failure
