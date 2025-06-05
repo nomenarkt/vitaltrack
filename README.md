@@ -1,3 +1,4 @@
+
 # 💊 Medicine Tracker
 
 A reliable, real-time medicine stock tracker with:
@@ -17,7 +18,22 @@ A reliable, real-time medicine stock tracker with:
 | Backend    | Go (Fiber)                  |
 | Data Store | Airtable (REST API)         |
 | Alerts     | Telegram Bot API            |
-| Deployment | GitHub Actions (soon)       |
+| Deployment | Render (free-tier Docker)   |
+
+---
+
+## 🧱 Why This Stack?
+
+Our stack is optimized for simplicity, cost-efficiency, and real-time alerting.
+
+| Layer      | Tech             | Why? |
+|------------|------------------|------|
+| **Backend** | Go (Fiber)        | Fast, minimal memory footprint, perfect for APIs. Fiber is expressive but fast like Node.js. |
+| **Data Store** | Airtable REST API | Great for prototyping with a spreadsheet-like UI and flexible schema. |
+| **Alerts** | Telegram Bot API | Easy setup, excellent UX for push notifications, and no cost. |
+| **Deploy** | Render.com        | Free-tier hosting with Docker support, zero-config, and smooth scaling. |
+
+This stack enables lean infrastructure with real-time automation and friendly UX — ideal for side projects, MVPs, and internal tools.
 
 ---
 
@@ -125,3 +141,5 @@ internal/
 - All Telegram messages are MarkdownV2-safe.
 - Refill notifications and alerts are **idempotent**.
 - `LastAlertedDate` ensures alerts are not duplicated.
+
+---
