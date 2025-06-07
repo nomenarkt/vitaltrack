@@ -31,7 +31,7 @@ func TestCurrentStockAt_WithRefillOnToday(t *testing.T) {
 	entries := []domain.StockEntry{
 		{
 			MedicineID: "med123",
-			Quantity:   1,
+			Quantity:   1.0,
 			Unit:       "box",
 			Date:       domain.NewFlexibleDate(now),
 		},
@@ -58,15 +58,15 @@ func TestCurrentStockAt_WithMultipleEntryDates(t *testing.T) {
 	today, _ := time.Parse("2006-01-02", "2025-06-04")
 
 	entries := []domain.StockEntry{
-		{MedicineID: "med1", Quantity: 1, Unit: "box", Date: domain.NewFlexibleDate(today)},                    // +10
-		{MedicineID: "med1", Quantity: 5, Unit: "pill", Date: domain.NewFlexibleDate(today)},                   // +5
-		{MedicineID: "med1", Quantity: 5, Unit: "pill", Date: domain.NewFlexibleDate(today.AddDate(0, 0, 1))},  // future: ignored
-		{MedicineID: "med1", Quantity: 5, Unit: "pill", Date: domain.NewFlexibleDate(today.AddDate(0, 0, -1))}, // past: ignored
+		{MedicineID: "med1", Quantity: 1.0, Unit: "box", Date: domain.NewFlexibleDate(today)},                    // +10
+		{MedicineID: "med1", Quantity: 5.0, Unit: "pill", Date: domain.NewFlexibleDate(today)},                   // +5
+		{MedicineID: "med1", Quantity: 5.0, Unit: "pill", Date: domain.NewFlexibleDate(today.AddDate(0, 0, 1))},  // future: ignored
+		{MedicineID: "med1", Quantity: 5.0, Unit: "pill", Date: domain.NewFlexibleDate(today.AddDate(0, 0, -1))}, // past: included
 	}
 
 	stock := stockcalc.CurrentStockAt(med, entries, today)
 
-	expected := 5.0 - 3.0 + 15.0 // initial - 3 days used + today's refill
+	expected := 5.0 + 20.0 - 3.0 // initial + all past refills - consumed
 	if stock != expected {
 		t.Errorf("Expected %.2f, got %.2f", expected, stock)
 	}
@@ -104,7 +104,7 @@ func TestCurrentStockAt_WithRFC3339StartDate(t *testing.T) {
 	entries := []domain.StockEntry{
 		{
 			MedicineID: "medRFC",
-			Quantity:   1,
+			Quantity:   1.0,
 			Unit:       "box",
 			Date:       domain.NewFlexibleDate(now),
 		},
@@ -134,7 +134,7 @@ func TestCurrentStockAt_EntryDateRFC3339Match(t *testing.T) {
 	rfcDate := time.Date(2025, 6, 4, 12, 0, 0, 0, time.UTC)
 
 	entries := []domain.StockEntry{
-		{MedicineID: "med2", Quantity: 1, Unit: "box", Date: domain.NewFlexibleDate(rfcDate)},
+		{MedicineID: "med2", Quantity: 1.0, Unit: "box", Date: domain.NewFlexibleDate(rfcDate)},
 	}
 
 	got := stockcalc.CurrentStockAt(med, entries, now)

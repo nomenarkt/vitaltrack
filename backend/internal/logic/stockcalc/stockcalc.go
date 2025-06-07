@@ -9,7 +9,7 @@ import (
 
 // CurrentStockAt computes current pill stock based on:
 // - Initial stock
-// - Refill entries applied only on their specific date
+// - All past refill entries
 // - Daily dose depletion from start date to now
 func CurrentStockAt(m domain.Medicine, entries []domain.StockEntry, now time.Time) float64 {
 	stock := m.InitialStock
@@ -19,12 +19,12 @@ func CurrentStockAt(m domain.Medicine, entries []domain.StockEntry, now time.Tim
 	now = now.UTC()
 
 	// Subtract consumed doses
-	daysPassed := int(now.Sub(startDate).Hours() / 24)
+	daysPassed := int(now.Truncate(24*time.Hour).Sub(startDate.Truncate(24*time.Hour)).Hours() / 24)
 	if daysPassed > 0 {
 		stock -= float64(daysPassed) * m.DailyDose
 	}
 
-	// Apply refills that occur on today only (idempotent)
+	// Apply refills that occurred up to now (inclusive)
 	for _, e := range entries {
 		if e.MedicineID != m.ID {
 			continue
@@ -32,12 +32,12 @@ func CurrentStockAt(m domain.Medicine, entries []domain.StockEntry, now time.Tim
 		if e.Date.IsZero() {
 			continue // skip unparsed or missing date entries
 		}
-		if e.Date.Year() == now.Year() && e.Date.YearDay() == now.YearDay() {
-			if e.Unit == "pill" {
-				stock += float64(e.Quantity)
-			} else {
-				stock += float64(e.Quantity) * m.UnitPerBox
+		if !e.Date.After(now) {
+			qty := e.Quantity
+			if e.Unit == "box" {
+				qty *= m.UnitPerBox
 			}
+			stock += qty
 		}
 	}
 

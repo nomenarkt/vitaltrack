@@ -97,7 +97,7 @@ func (s *StockChecker) CheckAndAlertLowStock() error {
 		var lines []string
 		for _, e := range todayEntries {
 			lines = append(lines,
-				fmt.Sprintf("• %d %s on %s",
+				fmt.Sprintf("• %.2f %s on %s",
 					e.Quantity,
 					util.EscapeMarkdown(e.Unit),
 					e.Date.Format("2006-01-02")),

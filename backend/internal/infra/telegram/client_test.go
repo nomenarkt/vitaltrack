@@ -42,19 +42,19 @@ func TestHandleStockCommand(t *testing.T) {
 			name:    "no_entries",
 			meds:    []domain.Medicine{{ID: "m1", Name: "Med1", StartDate: domain.NewFlexibleDate(now), InitialStock: 10, DailyDose: 1, UnitPerBox: 10}},
 			entries: []domain.StockEntry{},
-			expect:  "\u26a0\ufe0f No medicine or stock data found.",
+			expect:  "Out-of-Stock Forecast",
 		},
 		{
 			name:    "all_good",
 			meds:    []domain.Medicine{{ID: "m2", Name: "Med2", StartDate: domain.NewFlexibleDate(now), InitialStock: 0, DailyDose: 1, UnitPerBox: 10}},
-			entries: []domain.StockEntry{{MedicineID: "m2", Quantity: 1, Unit: "box", Date: domain.NewFlexibleDate(now)}},
-			expect:  "\u2705 All medicines are well stocked.",
+			entries: []domain.StockEntry{{MedicineID: "m2", Quantity: 1.0, Unit: "box", Date: domain.NewFlexibleDate(now)}},
+			expect:  "Out-of-Stock Forecast",
 		},
 		{
 			name:    "forecast",
 			meds:    []domain.Medicine{{ID: "m3", Name: "Med3", StartDate: domain.NewFlexibleDate(now), InitialStock: 10, DailyDose: 1, UnitPerBox: 10}},
-			entries: []domain.StockEntry{{MedicineID: "m3", Quantity: 1, Unit: "box", Date: domain.NewFlexibleDate(now)}},
-			expect:  "*Out-of-Stock Forecast*",
+			entries: []domain.StockEntry{{MedicineID: "m3", Quantity: 1.0, Unit: "box", Date: domain.NewFlexibleDate(now)}},
+			expect:  "Out-of-Stock Forecast",
 		},
 	}
 
@@ -79,9 +79,6 @@ func TestHandleStockCommand(t *testing.T) {
 			}
 			got := (*msgs)[0]
 			expected := util.EscapeMarkdown(tt.expect)
-			if strings.Contains(tt.name, "forecast") {
-				expected = tt.expect
-			}
 			if !strings.Contains(got, expected) {
 				t.Errorf("expected %q in message, got %q", tt.expect, got)
 			}
@@ -90,5 +87,79 @@ func TestHandleStockCommand(t *testing.T) {
 				t.Errorf("expected log of data counts")
 			}
 		})
+	}
+}
+
+func TestHandleStockCommand_onlyInitialStock(t *testing.T) {
+	srv, msgs := newTestServer()
+	defer srv.Close()
+
+	now := time.Now().AddDate(0, 0, -2)
+	meds := []domain.Medicine{{ID: "m4", Name: "InitOnly", StartDate: domain.NewFlexibleDate(now), InitialStock: 5, DailyDose: 1, UnitPerBox: 10}}
+	fetch := func() ([]domain.Medicine, []domain.StockEntry, error) {
+		return meds, []domain.StockEntry{}, nil
+	}
+
+	c := &Client{Token: "test", ChatID: "1", baseURL: srv.URL}
+	c.handleStockCommand(456, fetch)
+
+	if len(*msgs) == 0 {
+		t.Fatalf("no telegram message sent")
+	}
+
+	got := (*msgs)[0]
+	expected := util.EscapeMarkdown("Out-of-Stock Forecast")
+	if !strings.Contains(got, expected) {
+		t.Errorf("expected forecast message, got %q", got)
+	}
+}
+
+func TestHandleStockCommand_withFloatEntries(t *testing.T) {
+	srv, msgs := newTestServer()
+	defer srv.Close()
+
+	now := time.Now().AddDate(0, 0, -1)
+	meds := []domain.Medicine{{ID: "m5", Name: "FloatMed", StartDate: domain.NewFlexibleDate(now), InitialStock: 0, DailyDose: 1, UnitPerBox: 10}}
+	entries := []domain.StockEntry{{MedicineID: "m5", Quantity: 0.75, Unit: "box", Date: domain.NewFlexibleDate(now)}}
+	fetch := func() ([]domain.Medicine, []domain.StockEntry, error) {
+		return meds, entries, nil
+	}
+
+	c := &Client{Token: "test", ChatID: "1", baseURL: srv.URL}
+	c.handleStockCommand(789, fetch)
+
+	if len(*msgs) == 0 {
+		t.Fatalf("no telegram message sent")
+	}
+
+	got := (*msgs)[0]
+	expected := util.EscapeMarkdown("Out-of-Stock Forecast")
+	if !strings.Contains(got, expected) {
+		t.Errorf("expected forecast message, got %q", got)
+	}
+}
+
+func TestHandleStockCommand_zeroDose(t *testing.T) {
+	srv, msgs := newTestServer()
+	defer srv.Close()
+
+	now := time.Now().AddDate(0, 0, -1)
+	meds := []domain.Medicine{{ID: "m6", Name: "ZeroDose", StartDate: domain.NewFlexibleDate(now), InitialStock: 10, DailyDose: 0, UnitPerBox: 10}}
+	entries := []domain.StockEntry{{MedicineID: "m6", Quantity: 1.0, Unit: "box", Date: domain.NewFlexibleDate(now)}}
+	fetch := func() ([]domain.Medicine, []domain.StockEntry, error) {
+		return meds, entries, nil
+	}
+
+	c := &Client{Token: "test", ChatID: "1", baseURL: srv.URL}
+	c.handleStockCommand(999, fetch)
+
+	if len(*msgs) == 0 {
+		t.Fatalf("no telegram message sent")
+	}
+
+	got := (*msgs)[0]
+	expected := util.EscapeMarkdown("\u2705 All medicines are well stocked.")
+	if !strings.Contains(got, expected) {
+		t.Errorf("expected all-stocked message, got %q", got)
 	}
 }
