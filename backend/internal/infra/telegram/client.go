@@ -22,8 +22,9 @@ import (
 )
 
 type Client struct {
-	Token  string
-	ChatID string
+	Token   string
+	ChatID  string
+	baseURL string
 }
 
 func NewClient() *Client {
@@ -31,13 +32,18 @@ func NewClient() *Client {
 
 	token := os.Getenv("TELEGRAM_BOT_TOKEN")
 	chatID := os.Getenv("TELEGRAM_CHAT_ID")
+	baseURL := os.Getenv("TELEGRAM_API_BASE_URL")
+	if baseURL == "" {
+		baseURL = "https://api.telegram.org"
+	}
 	if token == "" || chatID == "" {
 		log.Fatal("missing Telegram configuration: TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID must be set")
 	}
 
 	return &Client{
-		Token:  token,
-		ChatID: chatID,
+		Token:   token,
+		ChatID:  chatID,
+		baseURL: baseURL,
 	}
 }
 
@@ -58,7 +64,7 @@ func (c *Client) SendTelegramMessage(msg string) error {
 	body, _ := json.Marshal(payload)
 
 	res, err := http.Post(
-		"https://api.telegram.org/bot"+c.Token+"/sendMessage",
+		c.baseURL+"/bot"+c.Token+"/sendMessage",
 		"application/json",
 		bytes.NewReader(body),
 	)
@@ -100,7 +106,7 @@ func (c *Client) PollForCommands(fetchData func() ([]domain.Medicine, []domain.S
 	for {
 		time.Sleep(2 * time.Second)
 
-		apiURL := fmt.Sprintf("https://api.telegram.org/bot%s/getUpdates?timeout=10&offset=%d", c.Token, lastUpdateID+1)
+		apiURL := fmt.Sprintf("%s/bot%s/getUpdates?timeout=10&offset=%d", c.baseURL, c.Token, lastUpdateID+1)
 		resp, err := http.Get(apiURL)
 		if err != nil {
 			log.Println("Telegram polling error:", err)
@@ -139,6 +145,14 @@ func (c *Client) handleStockCommand(chatID int64, fetchData func() ([]domain.Med
 		return
 	}
 
+	log.Printf("📊 /stock data: %d medicines, %d entries", len(meds), len(entries))
+	if len(meds) == 0 || len(entries) == 0 {
+		if err := c.sendTo(chatID, "\u26a0\ufe0f No medicine or stock data found."); err != nil {
+			log.Println("failed to send /stock response:", err)
+		}
+		return
+	}
+
 	now := time.Now()
 	type Row struct {
 		Name  string
@@ -153,6 +167,13 @@ func (c *Client) handleStockCommand(chatID int64, fetchData func() ([]domain.Med
 		}
 		date := stockcalc.OutOfStockDateAt(m, stock, now)
 		rows = append(rows, Row{m.Name, date, stock})
+	}
+
+	if len(rows) == 0 {
+		if err := c.sendTo(chatID, "\u2705 All medicines are well stocked."); err != nil {
+			log.Println("failed to send /stock response:", err)
+		}
+		return
 	}
 
 	sort.Slice(rows, func(i, j int) bool {
@@ -171,9 +192,16 @@ func (c *Client) handleStockCommand(chatID int64, fetchData func() ([]domain.Med
 }
 
 func (c *Client) sendTo(chatID int64, msg string) error {
+	if msg == "" {
+		return fmt.Errorf("empty telegram message")
+	}
+
 	escaped := msg
 	if !strings.Contains(msg, "```") {
 		escaped = util.EscapeMarkdown(msg)
+	}
+	if len(escaped) > 4000 {
+		escaped = escaped[:4000]
 	}
 
 	payload := url.Values{}
@@ -181,9 +209,24 @@ func (c *Client) sendTo(chatID int64, msg string) error {
 	payload.Set("text", escaped)
 	payload.Set("parse_mode", "MarkdownV2")
 
-	_, err := http.PostForm(
-		"https://api.telegram.org/bot"+c.Token+"/sendMessage",
+	res, err := http.PostForm(
+		c.baseURL+"/bot"+c.Token+"/sendMessage",
 		payload,
 	)
-	return err
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if cerr := res.Body.Close(); cerr != nil {
+			log.Println("telegram response close error:", cerr)
+		}
+	}()
+
+	if res.StatusCode >= http.StatusMultipleChoices {
+		body, _ := io.ReadAll(res.Body)
+		log.Printf("telegram send failed: status=%d body=%s", res.StatusCode, string(body))
+		return fmt.Errorf("telegram error status: %d", res.StatusCode)
+	}
+
+	return nil
 }
