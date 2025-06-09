@@ -2,7 +2,9 @@ package telegram
 
 import (
 	"bytes"
+	"fmt"
 	"log"
+	"math"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -164,5 +166,88 @@ func TestHandleStockCommand_zeroDose(t *testing.T) {
 	expected := util.EscapeMarkdown("\u2705 All medicines are well stocked.")
 	if !strings.Contains(got, expected) {
 		t.Errorf("expected all-stocked message, got %q", got)
+	}
+}
+
+func TestHandleStockCommand_partialDose(t *testing.T) {
+	srv, msgs := newTestServer()
+	defer srv.Close()
+
+	now := time.Now().UTC().Truncate(24 * time.Hour)
+	tests := []struct {
+		name         string
+		daily        float64
+		initialStock float64
+	}{
+		{name: "quarter", daily: 0.25, initialStock: 1},
+		{name: "half", daily: 0.5, initialStock: 1},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			meds := []domain.Medicine{{ID: "mp" + tt.name, Name: "Partial" + tt.name, StartDate: domain.NewFlexibleDate(now), InitialStock: tt.initialStock, DailyDose: tt.daily, UnitPerBox: 1}}
+			fetch := func() ([]domain.Medicine, []domain.StockEntry, error) {
+				return meds, []domain.StockEntry{}, nil
+			}
+
+			c := &Client{Token: "test", ChatID: "1", baseURL: srv.URL}
+			c.handleStockCommand(100, fetch)
+
+			if len(*msgs) == 0 {
+				t.Fatalf("no telegram message sent")
+			}
+			got := (*msgs)[len(*msgs)-1]
+			expectedDate := now.AddDate(0, 0, int(math.Floor(tt.initialStock/tt.daily))).Format("2006-01-02")
+			if !strings.Contains(got, expectedDate) {
+				t.Errorf("expected date %s in message, got %q", expectedDate, got)
+			}
+		})
+	}
+}
+
+func TestHandleStockCommand_refillAppliedCumulatively(t *testing.T) {
+	srv, msgs := newTestServer()
+	defer srv.Close()
+
+	now := time.Now().UTC().Truncate(24 * time.Hour)
+	start := now.AddDate(0, 0, -5)
+	entries := []domain.StockEntry{
+		{MedicineID: "mref", Quantity: 1, Unit: "box", Date: domain.NewFlexibleDate(start.AddDate(0, 0, 1))},
+		{MedicineID: "mref", Quantity: 1, Unit: "box", Date: domain.NewFlexibleDate(start.AddDate(0, 0, 2))},
+		{MedicineID: "mref", Quantity: 1, Unit: "box", Date: domain.NewFlexibleDate(start.AddDate(0, 0, 3))},
+	}
+	meds := []domain.Medicine{{ID: "mref", Name: "Refill", StartDate: domain.NewFlexibleDate(start), InitialStock: 0, DailyDose: 1, UnitPerBox: 10}}
+	fetch := func() ([]domain.Medicine, []domain.StockEntry, error) { return meds, entries, nil }
+
+	c := &Client{Token: "test", ChatID: "1", baseURL: srv.URL}
+	c.handleStockCommand(200, fetch)
+
+	if len(*msgs) == 0 {
+		t.Fatalf("no telegram message sent")
+	}
+	got := (*msgs)[0]
+	stock := 30.0 - 5.0 // 3 boxes = 30, consumed 5
+	days := int(math.Floor(stock))
+	expectedDate := now.AddDate(0, 0, days).Format("2006-01-02")
+	if !strings.Contains(got, expectedDate) {
+		t.Errorf("expected cumulative forecast date %s, got %q", expectedDate, got)
+	}
+}
+
+func TestHandleStockCommand_fetchError(t *testing.T) {
+	srv, msgs := newTestServer()
+	defer srv.Close()
+
+	fetch := func() ([]domain.Medicine, []domain.StockEntry, error) {
+		return nil, nil, fmt.Errorf("boom")
+	}
+	c := &Client{Token: "test", ChatID: "1", baseURL: srv.URL}
+	c.handleStockCommand(300, fetch)
+
+	if len(*msgs) == 0 {
+		t.Fatalf("no telegram message sent")
+	}
+	if (*msgs)[0] != util.EscapeMarkdown("\u26a0\ufe0f Failed to fetch stock data.") {
+		t.Errorf("expected fetch error message, got %q", (*msgs)[0])
 	}
 }
