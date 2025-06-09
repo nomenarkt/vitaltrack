@@ -130,6 +130,7 @@ func (c *Client) PollForCommands(fetchData func() ([]domain.Medicine, []domain.S
 		for _, update := range updates.Result {
 			lastUpdateID = update.UpdateID
 			if update.Message.Text == "/stock" {
+				log.Println("🟡 /stock command triggered")
 				go c.handleStockCommand(update.Message.Chat.ID, fetchData)
 			}
 		}
@@ -145,7 +146,7 @@ func (c *Client) handleStockCommand(chatID int64, fetchData func() ([]domain.Med
 		return
 	}
 
-	log.Printf("📊 /stock data: %d medicines, %d entries", len(meds), len(entries))
+	log.Printf("📦 meds: %d, entries: %d", len(meds), len(entries))
 	if len(meds) == 0 {
 		if err := c.sendTo(chatID, "\u26a0\ufe0f No medicine or stock data found."); err != nil {
 			log.Println("failed to send /stock response:", err)
@@ -185,9 +186,11 @@ func (c *Client) handleStockCommand(chatID int64, fetchData func() ([]domain.Med
 		lines = append(lines, fmt.Sprintf("%-22s → %s (%.2f left)", r.Name, r.Date.Format("2006-01-02"), r.Pills))
 	}
 
-	msg := "Out-of-Stock Forecast\n" + strings.Join(lines, "\n")
+	msg := "*Out-of-Stock Forecast*\n\n```text\n" + strings.Join(lines, "\n") + "\n```"
 	if err := c.sendTo(chatID, msg); err != nil {
 		log.Println("failed to send /stock response:", err)
+	} else {
+		log.Println("sent /stock forecast")
 	}
 }
 

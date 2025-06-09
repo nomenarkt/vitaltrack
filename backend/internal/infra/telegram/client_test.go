@@ -42,19 +42,19 @@ func TestHandleStockCommand(t *testing.T) {
 			name:    "no_entries",
 			meds:    []domain.Medicine{{ID: "m1", Name: "Med1", StartDate: domain.NewFlexibleDate(now), InitialStock: 10, DailyDose: 1, UnitPerBox: 10}},
 			entries: []domain.StockEntry{},
-			expect:  "Out-of-Stock Forecast",
+			expect:  "*Out-of-Stock Forecast*",
 		},
 		{
 			name:    "all_good",
 			meds:    []domain.Medicine{{ID: "m2", Name: "Med2", StartDate: domain.NewFlexibleDate(now), InitialStock: 0, DailyDose: 1, UnitPerBox: 10}},
 			entries: []domain.StockEntry{{MedicineID: "m2", Quantity: 1.0, Unit: "box", Date: domain.NewFlexibleDate(now)}},
-			expect:  "Out-of-Stock Forecast",
+			expect:  "*Out-of-Stock Forecast*",
 		},
 		{
 			name:    "forecast",
 			meds:    []domain.Medicine{{ID: "m3", Name: "Med3", StartDate: domain.NewFlexibleDate(now), InitialStock: 10, DailyDose: 1, UnitPerBox: 10}},
 			entries: []domain.StockEntry{{MedicineID: "m3", Quantity: 1.0, Unit: "box", Date: domain.NewFlexibleDate(now)}},
-			expect:  "Out-of-Stock Forecast",
+			expect:  "*Out-of-Stock Forecast*",
 		},
 	}
 
@@ -78,12 +78,15 @@ func TestHandleStockCommand(t *testing.T) {
 				t.Fatalf("no telegram message sent")
 			}
 			got := (*msgs)[0]
-			expected := util.EscapeMarkdown(tt.expect)
+			expected := tt.expect
+			if !strings.HasPrefix(expected, "*") {
+				expected = util.EscapeMarkdown(tt.expect)
+			}
 			if !strings.Contains(got, expected) {
 				t.Errorf("expected %q in message, got %q", tt.expect, got)
 			}
 
-			if !strings.Contains(logBuf.String(), "/stock data") {
+			if !strings.Contains(logBuf.String(), "📦 meds:") {
 				t.Errorf("expected log of data counts")
 			}
 		})
@@ -108,7 +111,7 @@ func TestHandleStockCommand_onlyInitialStock(t *testing.T) {
 	}
 
 	got := (*msgs)[0]
-	expected := util.EscapeMarkdown("Out-of-Stock Forecast")
+	expected := "*Out-of-Stock Forecast*"
 	if !strings.Contains(got, expected) {
 		t.Errorf("expected forecast message, got %q", got)
 	}
@@ -133,7 +136,7 @@ func TestHandleStockCommand_withFloatEntries(t *testing.T) {
 	}
 
 	got := (*msgs)[0]
-	expected := util.EscapeMarkdown("Out-of-Stock Forecast")
+	expected := "*Out-of-Stock Forecast*"
 	if !strings.Contains(got, expected) {
 		t.Errorf("expected forecast message, got %q", got)
 	}
