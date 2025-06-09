@@ -80,10 +80,7 @@ func TestHandleStockCommand(t *testing.T) {
 				t.Fatalf("no telegram message sent")
 			}
 			got := (*msgs)[0]
-			expected := tt.expect
-			if !strings.HasPrefix(expected, "*") {
-				expected = util.EscapeMarkdown(tt.expect)
-			}
+			expected := util.EscapeMarkdown(tt.expect)
 			if !strings.Contains(got, expected) {
 				t.Errorf("expected %q in message, got %q", tt.expect, got)
 			}
@@ -113,7 +110,7 @@ func TestHandleStockCommand_onlyInitialStock(t *testing.T) {
 	}
 
 	got := (*msgs)[0]
-	expected := "*Out-of-Stock Forecast*"
+	expected := util.EscapeMarkdown("*Out-of-Stock Forecast*")
 	if !strings.Contains(got, expected) {
 		t.Errorf("expected forecast message, got %q", got)
 	}
@@ -138,7 +135,7 @@ func TestHandleStockCommand_withFloatEntries(t *testing.T) {
 	}
 
 	got := (*msgs)[0]
-	expected := "*Out-of-Stock Forecast*"
+	expected := util.EscapeMarkdown("*Out-of-Stock Forecast*")
 	if !strings.Contains(got, expected) {
 		t.Errorf("expected forecast message, got %q", got)
 	}
@@ -197,7 +194,7 @@ func TestHandleStockCommand_partialDose(t *testing.T) {
 				t.Fatalf("no telegram message sent")
 			}
 			got := (*msgs)[len(*msgs)-1]
-			expectedDate := now.AddDate(0, 0, int(math.Floor(tt.initialStock/tt.daily))).Format("2006-01-02")
+			expectedDate := util.EscapeMarkdown(now.AddDate(0, 0, int(math.Floor(tt.initialStock/tt.daily))).Format("2006-01-02"))
 			if !strings.Contains(got, expectedDate) {
 				t.Errorf("expected date %s in message, got %q", expectedDate, got)
 			}
@@ -228,7 +225,7 @@ func TestHandleStockCommand_refillAppliedCumulatively(t *testing.T) {
 	got := (*msgs)[0]
 	stock := 30.0 - 5.0 // 3 boxes = 30, consumed 5
 	days := int(math.Floor(stock))
-	expectedDate := now.AddDate(0, 0, days).Format("2006-01-02")
+	expectedDate := util.EscapeMarkdown(now.AddDate(0, 0, days).Format("2006-01-02"))
 	if !strings.Contains(got, expectedDate) {
 		t.Errorf("expected cumulative forecast date %s, got %q", expectedDate, got)
 	}
@@ -249,5 +246,26 @@ func TestHandleStockCommand_fetchError(t *testing.T) {
 	}
 	if (*msgs)[0] != util.EscapeMarkdown("\u26a0\ufe0f Failed to fetch stock data.") {
 		t.Errorf("expected fetch error message, got %q", (*msgs)[0])
+	}
+}
+
+func TestSendTo_escapesMarkdown(t *testing.T) {
+	srv, msgs := newTestServer()
+	defer srv.Close()
+
+	c := &Client{Token: "test", ChatID: "1", baseURL: srv.URL}
+
+	name := "NEBI-LOL 5mg (sample)"
+	if err := c.sendTo(111, name); err != nil {
+		t.Fatalf("sendTo error: %v", err)
+	}
+
+	if len(*msgs) == 0 {
+		t.Fatalf("no telegram message sent")
+	}
+
+	expected := util.EscapeMarkdown(name)
+	if (*msgs)[0] != expected {
+		t.Errorf("expected %q, got %q", expected, (*msgs)[0])
 	}
 }

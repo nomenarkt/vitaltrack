@@ -50,10 +50,7 @@ func NewClient() *Client {
 func (c *Client) SendTelegramMessage(msg string) error {
 	log.Printf("📨 Sending Telegram: %s", msg)
 
-	escaped := msg
-	if !strings.Contains(msg, "```") {
-		escaped = util.EscapeMarkdown(msg)
-	}
+	escaped := util.EscapeMarkdown(msg)
 
 	payload := map[string]string{
 		"chat_id":    c.ChatID,
@@ -199,10 +196,7 @@ func (c *Client) sendTo(chatID int64, msg string) error {
 		return fmt.Errorf("empty telegram message")
 	}
 
-	escaped := msg
-	if !strings.Contains(msg, "```") {
-		escaped = util.EscapeMarkdown(msg)
-	}
+	escaped := util.EscapeMarkdown(msg)
 	if len(escaped) > 4000 {
 		escaped = escaped[:4000]
 	}
