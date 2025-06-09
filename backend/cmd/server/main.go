@@ -10,7 +10,6 @@ import (
 	"github.com/nomenarkt/medicine-tracker/backend/internal/background"
 	"github.com/nomenarkt/medicine-tracker/backend/internal/di"
 	"github.com/nomenarkt/medicine-tracker/backend/internal/domain"
-	"github.com/nomenarkt/medicine-tracker/backend/internal/infra/telegram"
 	"github.com/nomenarkt/medicine-tracker/backend/internal/server"
 )
 
@@ -35,23 +34,23 @@ func main() {
 		}
 	}
 	if os.Getenv("ENABLE_ALERT_TICKER") == "true" {
-		background.StartStockAlertTicker(telegram.HandleOutOfStockCommand, tickerInterval)
+		background.StartStockAlertTicker(deps, tickerInterval)
 	}
 
-    // 🧭 Start Telegram bot polling for `/stock` commands if enabled
-    if os.Getenv("ENABLE_TELEGRAM_POLLING") == "true" {
-            go deps.Telegram.PollForCommands(func() ([]domain.Medicine, []domain.StockEntry, error) {
-                    meds, err := deps.Airtable.FetchMedicines()
-                    if err != nil {
-                            return nil, nil, err
-                    }
-                    entries, err := deps.Airtable.FetchStockEntries()
-                    if err != nil {
-                            return nil, nil, err
-                    }
-                    return meds, entries, nil
-            })
-    }
+	// 🧭 Start Telegram bot polling for `/stock` commands if enabled
+	if os.Getenv("ENABLE_TELEGRAM_POLLING") == "true" {
+		go deps.Telegram.PollForCommands(func() ([]domain.Medicine, []domain.StockEntry, error) {
+			meds, err := deps.Airtable.FetchMedicines()
+			if err != nil {
+				return nil, nil, err
+			}
+			entries, err := deps.Airtable.FetchStockEntries()
+			if err != nil {
+				return nil, nil, err
+			}
+			return meds, entries, nil
+		})
+	}
 
 	// 🚀 Run server
 	log.Fatal(app.Listen(":8787"))
