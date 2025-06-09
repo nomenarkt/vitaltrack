@@ -1,24 +1,30 @@
+# Medicine Tracker
 
-# 💊 Medicine Tracker
+[![CI](https://github.com/yourusername/medicine-tracker/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/medicine-tracker/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A reliable, real-time medicine stock tracker with:
+A Go-based Telegram-integrated medicine stock tracker to forecast depletion dates, notify on refill needs, and manage medicine inventory efficiently.
 
-- ✅ Dynamic pill stock forecasting  
-- 📆 Out-of-stock date prediction  
-- 🔁 Refill handling (idempotent & date-bound)  
-- 🤖 Telegram alerts  
-- 📊 Airtable-based data storage  
+---
+
+## 🚀 Features
+
+* Forecast out-of-stock dates based on daily dosage and stock.
+* `/stock` command to view medicine forecasts in Telegram.
+* Automatic background alerts for upcoming refills (if enabled).
+* Airtable backend integration.
+* MarkdownV2-safe Telegram messages.
 
 ---
 
 ## 🛠️ Stack
 
-| Layer      | Tech                        |
-|------------|-----------------------------|
-| Backend    | Go (Fiber)                  |
-| Data Store | Airtable (REST API)         |
-| Alerts     | Telegram Bot API            |
-| Deployment | Render (free-tier Docker)   |
+| Layer      | Tech                      |
+| ---------- | ------------------------- |
+| Backend    | Go (Fiber)                |
+| Data Store | Airtable (REST API)       |
+| Alerts     | Telegram Bot API          |
+| Deployment | Render (free-tier Docker) |
 
 ---
 
@@ -26,151 +32,160 @@ A reliable, real-time medicine stock tracker with:
 
 Our stack is optimized for simplicity, cost-efficiency, and real-time alerting.
 
-| Layer      | Tech             | Why? |
-|------------|------------------|------|
-| **Backend** | Go (Fiber)        | Fast, minimal memory footprint, perfect for APIs. Fiber is expressive but fast like Node.js. |
-| **Data Store** | Airtable REST API | Great for prototyping with a spreadsheet-like UI and flexible schema. |
-| **Alerts** | Telegram Bot API | Easy setup, excellent UX for push notifications, and no cost. |
-| **Deploy** | Render.com        | Free-tier hosting with Docker support, zero-config, and smooth scaling. |
+| Layer          | Tech              | Why?                                                                                         |
+| -------------- | ----------------- | -------------------------------------------------------------------------------------------- |
+| **Backend**    | Go (Fiber)        | Fast, minimal memory footprint, perfect for APIs. Fiber is expressive but fast like Node.js. |
+| **Data Store** | Airtable REST API | Great for prototyping with a spreadsheet-like UI and flexible schema.                        |
+| **Alerts**     | Telegram Bot API  | Easy setup, excellent UX for push notifications, and no cost.                                |
+| **Deploy**     | Render.com        | Free-tier hosting with Docker support, zero-config, and smooth scaling.                      |
 
 This stack enables lean infrastructure with real-time automation and friendly UX — ideal for side projects, MVPs, and internal tools.
 
 ---
+
 ## Airtable Integration
 
 Our Airtable base uses two tables:
 
 ### Medicines
-- `id`
-- `name`
-- `unit_type`
-- `unit_per_box`
-- `daily_dose`
-- `start_date`
-- `initial_stock`
-- `forecast_last_updated`
-- `forecast_out_of_stock_date`
-- `last_alerted_date`
-- link to Stock Entries
+
+* `id`
+* `name`
+* `unit_type`
+* `unit_per_box`
+* `daily_dose`
+* `start_date`
+* `initial_stock`
+* `forecast_last_updated`
+* `forecast_out_of_stock_date`
+* `last_alerted_date`
+* link to Stock Entries
 
 ### Stock Entries
-- `id`
-- `date`
-- `quantity`
-- `unit`
-- `medicine_id`
+
+* `id`
+* `date`
+* `quantity`
+* `unit`
+* `medicine_id`
 
 The Airtable API token is supplied via the `AIRTABLE_TOKEN` environment variable. Never commit secrets to version control.
 
-## 🔧 Configuration
+---
 
-Copy `backend/.env.template` to `backend/.env` and fill in your credentials:
+## ⚙️ Environment Variables
 
-```env
-AIRTABLE_BASE_ID=
-AIRTABLE_MEDICINES_TABLE=
-AIRTABLE_ENTRIES_TABLE=
-AIRTABLE_TOKEN=
-TELEGRAM_BOT_TOKEN=
-TELEGRAM_CHAT_ID=
-ENABLE_ENTRY_POST=false
-ENABLE_ALERT_TICKER=false
-ENABLE_TELEGRAM_POLLING=false
 ```
+TELEGRAM_BOT_TOKEN=<your_token>
+TELEGRAM_CHAT_ID=<target_chat_id>
+TELEGRAM_API_BASE_URL=https://api.telegram.org
 
-If any required environment variable is missing, the backend exits with a fatal
-error during client initialization, ensuring misconfigurations are caught early.
+AIRTABLE_API_KEY=<airtable_key>
+AIRTABLE_BASE_ID=<airtable_base>
+AIRTABLE_MEDICINE_TABLE=Medicines
+AIRTABLE_ENTRY_TABLE=Entries
+
+ENABLE_ALERT_TICKER=true
+ALERT_TICKER_INTERVAL=24h
+ENABLE_TELEGRAM_POLLING=true
+```
 
 ---
 
-## 📦 Alerting & Notifications
+## 💬 Telegram Commands
 
-### ⏰ Out-of-Stock Alerts
+### `/stock`
 
-The system checks every medicine daily:
+Generates a forecast for all medicines:
 
-- Sends a **Telegram alert** when **10 days or less** remain before depletion.
-- Skips the alert if already sent today (tracked via `LastAlertedDate` field in Airtable).
+````
+*Out-of-Stock Forecast*
 
-**Alert Format:**
-
-```
-*<Medicine>* will run out in <X> day(s)\!
-Refill before *YYYY-MM-DD*
-Currently: *N.NN* pills left\.
-```
-
-### ♻️ Refill Detection
-
-If a stock entry was created **today**, a Telegram **refill notification** is sent:
-
-**Refill Format:**
+```text
+MedA                  → 2025-06-19 (20.00 left)
+MedB                  → 2025-06-22 (6.50 left)
+...etc
+````
 
 ```
-*Refill recorded for <Medicine>*:
-• 2 box on 2025-06-01
+
+### Automatic Alerts (Ticker)
+When enabled, the app sends alerts like:
+
 ```
 
-- Only today's entries are considered.
-- Refill messages are **separate** from depletion alerts.
+⚠️ *Refill Alert* for *MedA* – runs out on *2025-06-19*
+(20.00 pills left)
 
-### ⛔ Alert Suppression Rules
-
-- Only one alert per medicine per day.
-- `LastAlertedDate` prevents duplicates.
-- Refills are processed only if the `date == today`.
+````
 
 ---
 
 ## 🧪 Testing
 
-Run test suite with:
-
 ```bash
 make test
-```
+````
 
-Includes:
+Test coverage includes:
 
-- Unit tests for stock calculation
-- Table-driven tests for alert triggering & refill notifications
-
----
-
-## 🔍 Example: Telegram `/stock`
-
-The `/stock` command uses `CurrentStockAt()` and shows dynamic forecast:
-
-```text
-*Out-of-Stock Forecast*
-
-MedA                  → 2025-06-10 (12.00 left)
-MedB                  → 2025-06-15 (28.00 left)
-```
+* ✅ Markdown escaping (`EscapeMarkdown`) for Telegram-safe messages.
+* ✅ Forecast computation (initial stock, entry logs, fractional doses).
+* ✅ Alert triggering based on threshold and schedule.
+* ✅ `/stock` output formatting.
+* ✅ Telegram delivery mock testing via `httptest`.
 
 ---
 
-## 📁 Key Modules
+## 🏗️ Structure
 
 ```
-internal/
-├── usecase/alert.go        # All alert + refill logic
-├── logic/stockcalc/        # Computes current stock
-├── infra/telegram/         # Telegram /stock handler
-├── infra/airtable/         # API integration layer
-├── domain/models.go        # Medicine struct + forecast fields
+backend/
+├── internal/
+│   ├── background/        # Ticker alert loop
+│   ├── delivery/          # HTTP, CLI, Telegram handlers
+│   ├── domain/            # Entities, logic types
+│   ├── infra/             # Airtable + Telegram client
+│   ├── usecase/           # Domain use cases
+│   ├── util/              # Escape, formatting helpers
+│   └── di/                # Dependency injection
+├── Dockerfile
+└── README.md
 ```
 
 ---
 
-## 📎 Notes
+## 📦 Deployment
 
-- All Telegram messages are MarkdownV2-safe.
-- Refill notifications and alerts are **idempotent**.
-- `LastAlertedDate` ensures alerts are not duplicated.
+Supports Docker:
 
-## License
-
-Released under the [MIT License](LICENSE).
+```bash
+docker build -t medicine-tracker .
+docker run -p 8787:8787 --env-file .env medicine-tracker
+```
 
 ---
+
+## 📣 Notes
+
+* Ensure `ENABLE_ALERT_TICKER=true` and `ALERT_TICKER_INTERVAL` are set to trigger background alerts.
+* Only **one instance** of polling should run to avoid Telegram `409 conflict` errors.
+* Escape logic follows [MarkdownV2 rules](https://core.telegram.org/bots/api#markdownv2-style).
+
+---
+
+## 👥 Contributors
+
+Thanks to everyone who contributed:
+
+* [@ynomenarkt](https://github.com/nomenarkt) – Creator & maintainer
+* The Architect – Software Engineering Master GPT
+* Codex by OpenAI
+
+Your name here? Open a PR 😄
+
+---
+
+## 👨‍⚕️ Made for caregivers, by engineers.
+
+Keep your loved ones’ medicine under control. ❤️
