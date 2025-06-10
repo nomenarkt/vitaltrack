@@ -68,7 +68,7 @@ func (s *StockChecker) CheckAndAlertLowStock() error {
 			}
 			log.Println("✅ Telegram message sent")
 
-			if err := s.Airtable.UpdateLastAlertedDate(m.ID, now); err != nil {
+			if err := s.Airtable.UpdateMedicineLastAlertedDate(m.ID, now); err != nil {
 				log.Printf("⚠️ Failed to update LastAlertedDate for %s: %v", m.Name, err)
 			}
 		}

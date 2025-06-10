@@ -14,7 +14,9 @@ import (
 	"github.com/nomenarkt/medicine-tracker/backend/internal/domain"
 )
 
-type Client struct{}
+type Client struct {
+	baseURL string
+}
 
 func NewClient() *Client {
 	_ = godotenv.Load()
@@ -27,7 +29,12 @@ func NewClient() *Client {
 		log.Fatal("missing Airtable configuration: ensure AIRTABLE_BASE_ID, AIRTABLE_MEDICINES_TABLE, AIRTABLE_ENTRIES_TABLE and AIRTABLE_TOKEN are set")
 	}
 
-	return &Client{}
+	baseURL := os.Getenv("AIRTABLE_API_BASE_URL")
+	if baseURL == "" {
+		baseURL = "https://api.airtable.com"
+	}
+
+	return &Client{baseURL: baseURL}
 }
 
 type airtableRecord[T any] struct {
@@ -40,7 +47,8 @@ type airtableResponse[T any] struct {
 }
 
 func (c *Client) FetchMedicines() ([]domain.Medicine, error) {
-	url := fmt.Sprintf("https://api.airtable.com/v0/%s/%s",
+	url := fmt.Sprintf("%s/v0/%s/%s",
+		c.baseURL,
 		os.Getenv("AIRTABLE_BASE_ID"),
 		os.Getenv("AIRTABLE_MEDICINES_TABLE"))
 
@@ -81,7 +89,8 @@ func (c *Client) FetchMedicines() ([]domain.Medicine, error) {
 }
 
 func (c *Client) FetchStockEntries() ([]domain.StockEntry, error) {
-	url := fmt.Sprintf("https://api.airtable.com/v0/%s/%s",
+	url := fmt.Sprintf("%s/v0/%s/%s",
+		c.baseURL,
 		os.Getenv("AIRTABLE_BASE_ID"),
 		os.Getenv("AIRTABLE_ENTRIES_TABLE"))
 
@@ -122,7 +131,8 @@ func (c *Client) FetchStockEntries() ([]domain.StockEntry, error) {
 }
 
 func (c *Client) CreateStockEntry(entry domain.StockEntry) error {
-	url := fmt.Sprintf("https://api.airtable.com/v0/%s/%s",
+	url := fmt.Sprintf("%s/v0/%s/%s",
+		c.baseURL,
 		os.Getenv("AIRTABLE_BASE_ID"),
 		os.Getenv("AIRTABLE_ENTRIES_TABLE"))
 
@@ -160,7 +170,8 @@ func (c *Client) CreateStockEntry(entry domain.StockEntry) error {
 }
 
 func (c *Client) UpdateForecastDate(medicineID string, forecastDate, updatedAt time.Time) error {
-	url := fmt.Sprintf("https://api.airtable.com/v0/%s/%s/%s",
+	url := fmt.Sprintf("%s/v0/%s/%s/%s",
+		c.baseURL,
 		os.Getenv("AIRTABLE_BASE_ID"),
 		os.Getenv("AIRTABLE_MEDICINES_TABLE"),
 		medicineID)
@@ -196,8 +207,9 @@ func (c *Client) UpdateForecastDate(medicineID string, forecastDate, updatedAt t
 	return nil
 }
 
-func (c *Client) UpdateLastAlertedDate(medicineID string, date time.Time) error {
-	url := fmt.Sprintf("https://api.airtable.com/v0/%s/%s/%s",
+func (c *Client) UpdateMedicineLastAlertedDate(medicineID string, date time.Time) error {
+	url := fmt.Sprintf("%s/v0/%s/%s/%s",
+		c.baseURL,
 		os.Getenv("AIRTABLE_BASE_ID"),
 		os.Getenv("AIRTABLE_MEDICINES_TABLE"),
 		medicineID)
@@ -224,10 +236,22 @@ func (c *Client) UpdateLastAlertedDate(medicineID string, date time.Time) error 
 		}
 	}()
 
-	if res.StatusCode >= 300 {
-		b, _ := io.ReadAll(res.Body)
+	b, _ := io.ReadAll(res.Body)
+	if res.StatusCode >= http.StatusMultipleChoices {
+		log.Printf("airtable update failed: status=%d body=%s", res.StatusCode, string(b))
 		return fmt.Errorf("airtable error: %s", string(b))
 	}
 
+	var rec airtableRecord[domain.Medicine]
+	if err := json.Unmarshal(b, &rec); err != nil {
+		log.Printf("airtable decode error: %v body=%s", err, string(b))
+		return fmt.Errorf("decode airtable response: %w", err)
+	}
+	if rec.Fields.LastAlertedDate == nil || rec.Fields.LastAlertedDate.Format("2006-01-02") != date.Format("2006-01-02") {
+		log.Printf("airtable update mismatch body=%s", string(b))
+		return fmt.Errorf("unexpected airtable response")
+	}
+
+	log.Printf("🆗 updated last_alerted_date response=%s", string(b))
 	return nil
 }

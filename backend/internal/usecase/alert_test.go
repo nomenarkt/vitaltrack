@@ -20,7 +20,7 @@ func (m *mockAirtable) FetchMedicines() ([]domain.Medicine, error) {
 func (m *mockAirtable) FetchStockEntries() ([]domain.StockEntry, error) {
 	return m.entries, nil
 }
-func (m *mockAirtable) UpdateLastAlertedDate(medicineID string, date time.Time) error {
+func (m *mockAirtable) UpdateMedicineLastAlertedDate(medicineID string, date time.Time) error {
 	return nil
 }
 
