@@ -23,6 +23,14 @@ func SetupRoutes(
 	const stockThreshold = 10.0
 	allowEntryPost := os.Getenv("ENABLE_ENTRY_POST") == "true"
 
+	// ✅ New route for manual stock check via HTTP
+	app.Get("/check", func(c *fiber.Ctx) error {
+		if err := checker.CheckAndAlertLowStock(); err != nil {
+			return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+		}
+		return c.JSON(fiber.Map{"status": "ok"})
+	})
+
 	app.Get("/debug/medicines", func(c *fiber.Ctx) error {
 		meds, err := dataPort.FetchMedicines()
 		if err != nil {
@@ -130,11 +138,4 @@ func SetupRoutes(
 			return c.Status(201).JSON(fiber.Map{"message": "stock entry created"})
 		})
 	}
-
-	app.Get("/debug/check-low-stock", func(c *fiber.Ctx) error {
-		if err := checker.CheckAndAlertLowStock(); err != nil {
-			return c.Status(500).JSON(fiber.Map{"error": err.Error()})
-		}
-		return c.JSON(fiber.Map{"message": "low stock check completed"})
-	})
 }

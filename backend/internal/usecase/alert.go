@@ -46,8 +46,19 @@ func (s *StockChecker) CheckAndAlertLowStock() error {
 		daysLeft := int(forecastDate.Truncate(24*time.Hour).Sub(now.Truncate(24*time.Hour)).Hours() / 24)
 
 		log.Printf("🔍 %s: stock=%.2f, forecast=%s, daysLeft=%d", m.Name, stock, forecastDate.Format("2006-01-02"), daysLeft)
+		log.Printf("🧪 Candidate: %s - daysLeft=%d (threshold=10)", m.Name, daysLeft)
+		log.Printf("🧾 Stock: %.2f, DailyDose: %.2f", stock, m.DailyDose)
 
 		if daysLeft <= 10 {
+			// 🔬 DEBUG: Log the existing LastAlertedDate
+			if m.LastAlertedDate != nil {
+				log.Printf("🔬 LastAlertedDate for %s = %s", m.Name, m.LastAlertedDate.Format("2006-01-02"))
+			} else {
+				log.Printf("🔬 LastAlertedDate for %s is nil", m.Name)
+			}
+
+			log.Printf("🔬 LastAlertedDate for %s: %v", m.Name, m.LastAlertedDate)
+
 			if m.LastAlertedDate != nil && m.LastAlertedDate.Format("2006-01-02") == now.Format("2006-01-02") {
 				log.Printf("ℹ️ Already alerted for %s today, skipping.", m.Name)
 				continue
@@ -64,14 +75,15 @@ func (s *StockChecker) CheckAndAlertLowStock() error {
 			log.Printf("📲 Sending alert for %s", m.Name)
 			if err := s.Telegram.SendTelegramMessage(alert); err != nil {
 				log.Printf("❌ Telegram send failed: %v", err)
-				continue
+			} else {
+				log.Println("✅ Telegram message sent")
 			}
-			log.Println("✅ Telegram message sent")
-			log.Printf("🧪 Calling UpdateMedicineLastAlertedDate for recordID=%s", m.ID)
 
+			log.Printf("🧪 Calling UpdateMedicineLastAlertedDate for recordID=%s", m.ID)
 			if err := s.Airtable.UpdateMedicineLastAlertedDate(m.ID, now); err != nil {
 				log.Printf("⚠️ Failed to update LastAlertedDate for %s: %v", m.Name, err)
 			}
+
 		}
 	}
 
