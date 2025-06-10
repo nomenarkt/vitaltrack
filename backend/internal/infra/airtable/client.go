@@ -184,6 +184,7 @@ func (c *Client) UpdateForecastDate(medicineID string, forecastDate, updatedAt t
 	}
 
 	body, _ := json.Marshal(payload)
+	log.Printf("🧪 PATCH Airtable: recordID=%s body=%s", medicineID, string(body))
 
 	req, _ := http.NewRequest("PATCH", url, bytes.NewReader(body))
 	req.Header.Set("Authorization", "Bearer "+os.Getenv("AIRTABLE_TOKEN"))
@@ -221,6 +222,7 @@ func (c *Client) UpdateMedicineLastAlertedDate(medicineID string, date time.Time
 	}
 
 	body, _ := json.Marshal(payload)
+	log.Printf("🧪 PATCH Airtable: recordID=%s body=%s", medicineID, string(body))
 
 	req, _ := http.NewRequest("PATCH", url, bytes.NewReader(body))
 	req.Header.Set("Authorization", "Bearer "+os.Getenv("AIRTABLE_TOKEN"))
