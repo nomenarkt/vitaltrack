@@ -56,6 +56,33 @@ func TestUpdateMedicineLastAlertedDate(t *testing.T) {
 	}
 }
 
+func TestUpdateMedicineLastAlertedDate_ignoresMismatch(t *testing.T) {
+	date := time.Date(2025, 6, 10, 0, 0, 0, 0, time.UTC)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, `{"id":"rec","fields":{"last_alerted_date":"2024-01-01"}}`)
+	}))
+	defer srv.Close()
+
+	os.Setenv("AIRTABLE_BASE_ID", "base")
+	os.Setenv("AIRTABLE_MEDICINES_TABLE", "table")
+	os.Setenv("AIRTABLE_TOKEN", "tok")
+
+	c := &Client{baseURL: srv.URL}
+
+	var buf bytes.Buffer
+	orig := log.Writer()
+	log.SetOutput(&buf)
+	defer log.SetOutput(orig)
+
+	if err := c.UpdateMedicineLastAlertedDate("rec", date); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if !strings.Contains(buf.String(), "response=") {
+		t.Errorf("expected log with response, got %s", buf.String())
+	}
+}
+
 func TestUpdateMedicineLastAlertedDate_errorStatus(t *testing.T) {
 	date := time.Date(2025, 6, 10, 0, 0, 0, 0, time.UTC)
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

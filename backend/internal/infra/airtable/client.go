@@ -237,19 +237,9 @@ func (c *Client) UpdateMedicineLastAlertedDate(medicineID string, date time.Time
 	}()
 
 	b, _ := io.ReadAll(res.Body)
-	if res.StatusCode >= http.StatusMultipleChoices {
+	if res.StatusCode != http.StatusOK {
 		log.Printf("airtable update failed: status=%d body=%s", res.StatusCode, string(b))
 		return fmt.Errorf("airtable error: %s", string(b))
-	}
-
-	var rec airtableRecord[domain.Medicine]
-	if err := json.Unmarshal(b, &rec); err != nil {
-		log.Printf("airtable decode error: %v body=%s", err, string(b))
-		return fmt.Errorf("decode airtable response: %w", err)
-	}
-	if rec.Fields.LastAlertedDate == nil || rec.Fields.LastAlertedDate.Format("2006-01-02") != date.Format("2006-01-02") {
-		log.Printf("airtable update mismatch body=%s", string(b))
-		return fmt.Errorf("unexpected airtable response")
 	}
 
 	log.Printf("🆗 updated last_alerted_date response=%s", string(b))
