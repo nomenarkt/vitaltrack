@@ -161,3 +161,23 @@ func TestUpdateForecastDate(t *testing.T) {
 		t.Errorf("request body missing updated date: %s", string(body))
 	}
 }
+
+func TestFetchMedicines_AssignsID(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, `{"records":[{"id":"recA","fields":{"name":"MedA"}}]}`)
+	}))
+	defer srv.Close()
+
+	os.Setenv("AIRTABLE_BASE_ID", "base")
+	os.Setenv("AIRTABLE_MEDICINES_TABLE", "table")
+	os.Setenv("AIRTABLE_TOKEN", "tok")
+
+	c := &Client{baseURL: srv.URL}
+	meds, err := c.FetchMedicines()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(meds) != 1 || meds[0].ID != "recA" {
+		t.Fatalf("expected record ID set, got %+v", meds)
+	}
+}

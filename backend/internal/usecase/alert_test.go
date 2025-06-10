@@ -1,6 +1,8 @@
 package usecase_test
 
 import (
+	"bytes"
+	"log"
 	"strings"
 	"testing"
 	"time"
@@ -10,8 +12,10 @@ import (
 )
 
 type mockAirtable struct {
-	meds    []domain.Medicine
-	entries []domain.StockEntry
+	meds        []domain.Medicine
+	entries     []domain.StockEntry
+	updatedID   string
+	updatedDate time.Time
 }
 
 func (m *mockAirtable) FetchMedicines() ([]domain.Medicine, error) {
@@ -21,6 +25,8 @@ func (m *mockAirtable) FetchStockEntries() ([]domain.StockEntry, error) {
 	return m.entries, nil
 }
 func (m *mockAirtable) UpdateMedicineLastAlertedDate(medicineID string, date time.Time) error {
+	m.updatedID = medicineID
+	m.updatedDate = date
 	return nil
 }
 
@@ -145,5 +151,41 @@ func TestCheckAndAlertLowStock_Table(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestCheckAndAlertLowStock_UpdatesLastAlerted(t *testing.T) {
+	now := time.Now().UTC().Truncate(24 * time.Hour)
+
+	at := &mockAirtable{
+		meds: []domain.Medicine{
+			{
+				ID:           "rec99",
+				Name:         "Med99",
+				StartDate:    domain.NewFlexibleDate(now),
+				InitialStock: 10,
+				DailyDose:    1,
+				UnitPerBox:   10,
+			},
+		},
+	}
+	tg := &mockTelegram{}
+	checker := usecase.StockChecker{Airtable: at, Telegram: tg}
+
+	var buf bytes.Buffer
+	orig := log.Writer()
+	log.SetOutput(&buf)
+	defer log.SetOutput(orig)
+
+	if err := checker.CheckAndAlertLowStock(); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if at.updatedID != "rec99" {
+		t.Errorf("expected update for rec99, got %s", at.updatedID)
+	}
+	logs := buf.String()
+	if !strings.Contains(logs, "Calling UpdateMedicineLastAlertedDate") {
+		t.Errorf("missing update log: %s", logs)
 	}
 }
