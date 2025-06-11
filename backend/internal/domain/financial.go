@@ -4,11 +4,14 @@ import "time"
 
 // FinancialEntry represents a single contribution toward a need.
 type FinancialEntry struct {
-	ID          string       `json:"id"`
-	Date        FlexibleDate `json:"date"`
-	Need        string       `json:"need"`
-	Contributor string       `json:"contributor"`
-	Amount      float64      `json:"amount"`
+	ID                string       `json:"id"`
+	Date              FlexibleDate `json:"date"`
+	NeedLabel         string       `json:"need_label"`
+	NeedAmount        float64      `json:"need_amount"`
+	AmountContributed float64      `json:"amount_contributed"`
+	MonthTag          string       `json:"month_tag"`
+	Contributor       string       `json:"contributor"`
+	Amount            float64      `json:"amount"`
 }
 
 // ContributorAmount represents the amount contributed by a single contributor.

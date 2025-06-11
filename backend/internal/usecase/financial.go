@@ -27,7 +27,7 @@ func (s FinancialReportService) GenerateFinancialReport(year, month int) (domain
 	total := 0.0
 
 	for _, e := range entries {
-		key := fmt.Sprintf("%s %s", e.Date.Format("2006-01-02"), e.Need)
+		key := fmt.Sprintf("%s %s", e.Date.Format("2006-01-02"), e.NeedLabel)
 		if _, ok := breakdown[key]; !ok {
 			breakdown[key] = map[string]float64{}
 		}

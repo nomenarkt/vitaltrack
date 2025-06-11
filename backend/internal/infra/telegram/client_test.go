@@ -262,9 +262,9 @@ func TestHandleFinanceCommand(t *testing.T) {
 
 	date := time.Date(2025, 6, 5, 0, 0, 0, 0, time.UTC)
 	entries := []domain.FinancialEntry{
-		{Date: domain.NewFlexibleDate(date), Need: "Med", Contributor: "Bob", Amount: 5},
-		{Date: domain.NewFlexibleDate(date), Need: "Med", Contributor: "Alice", Amount: 10},
-		{Date: domain.NewFlexibleDate(date), Need: "Med", Contributor: "Charlie", Amount: 0},
+		{Date: domain.NewFlexibleDate(date), NeedLabel: "Med", Contributor: "Bob", Amount: 5},
+		{Date: domain.NewFlexibleDate(date), NeedLabel: "Med", Contributor: "Alice", Amount: 10},
+		{Date: domain.NewFlexibleDate(date), NeedLabel: "Med", Contributor: "Charlie", Amount: 0},
 	}
 
 	svc := usecase.FinancialReportService{Repo: mockFinanceRepo{entries: entries}}
