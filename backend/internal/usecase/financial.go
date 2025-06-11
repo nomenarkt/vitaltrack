@@ -21,42 +21,51 @@ func (s FinancialReportService) GenerateFinancialReport(year, month int) (domain
 		return domain.MonthlyFinancialReport{}, fmt.Errorf("fetch financial entries failed: %w", err)
 	}
 
-	needBreakdown := map[string]map[string]float64{}
+	breakdown := map[string]map[string]float64{}
 	contributorTotals := map[string]float64{}
+	contributorSet := map[string]struct{}{}
 	total := 0.0
 
 	for _, e := range entries {
-		if _, ok := needBreakdown[e.Need]; !ok {
-			needBreakdown[e.Need] = map[string]float64{}
+		key := fmt.Sprintf("%s %s", e.Date.Format("2006-01-02"), e.Need)
+		if _, ok := breakdown[key]; !ok {
+			breakdown[key] = map[string]float64{}
 		}
-		needBreakdown[e.Need][e.Contributor] += e.Amount
+		breakdown[key][e.Contributor] += e.Amount
 		contributorTotals[e.Contributor] += e.Amount
+		contributorSet[e.Contributor] = struct{}{}
 		total += e.Amount
 	}
 
-	var needs []domain.NeedReportBlock
-	var needNames []string
-	for n := range needBreakdown {
-		needNames = append(needNames, n)
+	var contributorNames []string
+	for c := range contributorSet {
+		contributorNames = append(contributorNames, c)
 	}
-	sort.Strings(needNames)
-	for _, n := range needNames {
-		contributorsMap := needBreakdown[n]
+	sort.Strings(contributorNames)
+
+	var needKeys []string
+	for k := range breakdown {
+		needKeys = append(needKeys, k)
+	}
+	sort.Strings(needKeys)
+
+	var needs []domain.NeedReportBlock
+	for _, k := range needKeys {
+		contribMap := breakdown[k]
 		var contribs []domain.ContributorAmount
 		var needTotal float64
-		for c, v := range contributorsMap {
-			contribs = append(contribs, domain.ContributorAmount{Name: c, Amount: v})
-			needTotal += v
+		for _, name := range contributorNames {
+			amt := contribMap[name]
+			contribs = append(contribs, domain.ContributorAmount{Name: name, Amount: amt})
+			needTotal += amt
 		}
-		sort.Slice(contribs, func(i, j int) bool { return contribs[i].Name < contribs[j].Name })
-		needs = append(needs, domain.NeedReportBlock{Need: n, Contributors: contribs, Total: needTotal})
+		needs = append(needs, domain.NeedReportBlock{Need: k, Contributors: contribs, Total: needTotal})
 	}
 
 	var contributors []domain.ContributorAmount
-	for c, v := range contributorTotals {
-		contributors = append(contributors, domain.ContributorAmount{Name: c, Amount: v})
+	for _, name := range contributorNames {
+		contributors = append(contributors, domain.ContributorAmount{Name: name, Amount: contributorTotals[name]})
 	}
-	sort.Slice(contributors, func(i, j int) bool { return contributors[i].Name < contributors[j].Name })
 
 	return domain.MonthlyFinancialReport{
 		Year:         year,
