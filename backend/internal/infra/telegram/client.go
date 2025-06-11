@@ -215,28 +215,20 @@ func (c *Client) handleFinanceCommand(chatID int64, fn func(year, month int) (do
 	}
 
 	var sections []string
+	totalNeed := 0.0
 	for _, n := range report.Needs {
-		var lines []string
-		lines = append(lines, fmt.Sprintf("*%s*", n.Need))
-		lines = append(lines, "| Contributor | Amount |")
-		lines = append(lines, "| --- | --- |")
-		for _, ctb := range n.Contributors {
-			lines = append(lines, fmt.Sprintf("| %s | %s |", ctb.Name, fmt.Sprintf("%.0f MGA", ctb.Amount)))
-		}
-		lines = append(lines, fmt.Sprintf("*Total:* %s", fmt.Sprintf("%.0f MGA", n.Total)))
-		sections = append(sections, strings.Join(lines, "\n"))
+		sections = append(sections, renderNeedBlock(n))
+		totalNeed += n.Total
 	}
 
 	var summary []string
-	summary = append(summary, "*Monthly Summary*")
-	totalNeed := 0.0
-	for _, n := range report.Needs {
-		totalNeed += n.Total
-	}
-	summary = append(summary, fmt.Sprintf("*Total Need:* %s", fmt.Sprintf("%.0f MGA", totalNeed)))
-	summary = append(summary, fmt.Sprintf("*Total Contributed:* %s", fmt.Sprintf("%.0f MGA", report.Total)))
+	summary = append(summary, "🧮 Monthly Summary")
+	summary = append(summary, fmt.Sprintf("💰 Total Needs: %s", formatMGA(totalNeed)))
+	summary = append(summary, fmt.Sprintf("💵 Total Contributed: %s", formatMGA(report.Total)))
+	summary = append(summary, "")
+	summary = append(summary, "👤 By Contributor:")
 	for _, ctb := range report.Contributors {
-		summary = append(summary, fmt.Sprintf("*%s:* %s", ctb.Name, fmt.Sprintf("%.0f MGA", ctb.Amount)))
+		summary = append(summary, fmt.Sprintf("- %s \u2192 %s", ctb.Name, formatMGA(ctb.Amount)))
 	}
 
 	msg := fmt.Sprintf("*Financial Report %d-%02d*\n\n%s\n\n%s",
@@ -282,4 +274,34 @@ func (c *Client) sendTo(chatID int64, msg string) error {
 	}
 
 	return nil
+}
+
+func formatMGA(v float64) string {
+	return fmt.Sprintf("%.0f\u202FMGA", v)
+}
+
+func renderNeedBlock(n domain.NeedReportBlock) string {
+	parts := strings.SplitN(n.Need, " ", 2)
+	dateStr := parts[0]
+	label := ""
+	if len(parts) > 1 {
+		label = parts[1]
+	}
+	d, err := time.Parse("2006-01-02", dateStr)
+	if err != nil {
+		d = time.Time{}
+	}
+	var lines []string
+	lines = append(lines, fmt.Sprintf("📅 %s", d.Format("January 2, 2006")))
+	if label != "" {
+		lines = append(lines, fmt.Sprintf("💊 %s", label))
+	}
+	lines = append(lines, fmt.Sprintf("💰 Total Need: %s", formatMGA(n.Total)))
+	lines = append(lines, "")
+	lines = append(lines, "| 👤 Contributor | 💵 Amount |")
+	lines = append(lines, "|----------------|-----------|")
+	for _, ctb := range n.Contributors {
+		lines = append(lines, fmt.Sprintf("| %s | %s |", ctb.Name, formatMGA(ctb.Amount)))
+	}
+	return strings.Join(lines, "\n")
 }

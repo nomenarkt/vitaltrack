@@ -287,11 +287,17 @@ func TestHandleFinanceCommand(t *testing.T) {
 		t.Fatalf("unexpected message: %s", msg)
 	}
 
-	// verify alphabetical order and zero contributions in summary
+	emojis := []string{"📅", "💊", "💰", "🧮", "👤", "💵"}
+	for _, e := range emojis {
+		if !strings.Contains(msg, e) {
+			t.Errorf("missing %s in message", e)
+		}
+	}
+
 	expectedOrder := []string{
-		util.EscapeMarkdown("*Alice:* 10 MGA"),
-		util.EscapeMarkdown("*Bob:* 5 MGA"),
-		util.EscapeMarkdown("*Charlie:* 0 MGA"),
+		util.EscapeMarkdown("- Alice \u2192 10\u202FMGA"),
+		util.EscapeMarkdown("- Bob \u2192 5\u202FMGA"),
+		util.EscapeMarkdown("- Charlie \u2192 0\u202FMGA"),
 	}
 	last := -1
 	for _, e := range expectedOrder {
@@ -305,9 +311,13 @@ func TestHandleFinanceCommand(t *testing.T) {
 		last = idx
 	}
 
-	row := util.EscapeMarkdown("| Charlie | 0 MGA |")
+	row := util.EscapeMarkdown("| Charlie | 0\u202FMGA |")
 	if !strings.Contains(msg, row) {
 		t.Errorf("expected zero contribution row, got %s", msg)
+	}
+
+	if !strings.Contains(msg, "\u202fMGA") {
+		t.Errorf("narrow space missing in MGA values")
 	}
 }
 
