@@ -220,7 +220,7 @@ func (c *Client) handleFinanceCommand(chatID int64, fn func(year, month int) (do
 	}
 	var contribLines []string
 	for _, ctb := range report.Contributors {
-		contribLines = append(contribLines, fmt.Sprintf("%-20s $%.2f", ctb.Contributor, ctb.Total))
+		contribLines = append(contribLines, fmt.Sprintf("%-20s $%.2f", ctb.Name, ctb.Amount))
 	}
 
 	msg := fmt.Sprintf("*Financial Report %d-%02d*\n\n*Needs*\n```text\n%s\n```\n*Contributors*\n```text\n%s\n```\n*Total:* $%.2f",

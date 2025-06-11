@@ -31,8 +31,19 @@ func TestGenerateFinancialReport(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	expectedNeeds := []domain.NeedReport{{Need: "Food", Total: 2}, {Need: "Med", Total: 15}}
-	expectedContrib := []domain.ContributorSummary{{Contributor: "Alice", Total: 12}, {Contributor: "Bob", Total: 5}}
+	expectedNeeds := []domain.NeedReportBlock{
+		{
+			Need:         "Food",
+			Contributors: []domain.ContributorAmount{{Name: "Alice", Amount: 2}},
+			Total:        2,
+		},
+		{
+			Need:         "Med",
+			Contributors: []domain.ContributorAmount{{Name: "Alice", Amount: 10}, {Name: "Bob", Amount: 5}},
+			Total:        15,
+		},
+	}
+	expectedContrib := []domain.ContributorAmount{{Name: "Alice", Amount: 12}, {Name: "Bob", Amount: 5}}
 
 	if !reflect.DeepEqual(rep.Needs, expectedNeeds) {
 		t.Errorf("needs = %#v, want %#v", rep.Needs, expectedNeeds)

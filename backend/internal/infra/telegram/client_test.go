@@ -254,10 +254,12 @@ func TestHandleFinanceCommand(t *testing.T) {
 	defer srv.Close()
 
 	report := domain.MonthlyFinancialReport{
-		Year:         2025,
-		Month:        time.June,
-		Needs:        []domain.NeedReport{{Need: "Med", Total: 10}},
-		Contributors: []domain.ContributorSummary{{Contributor: "Alice", Total: 10}},
+		Year:  2025,
+		Month: time.June,
+		Needs: []domain.NeedReportBlock{
+			{Need: "Med", Contributors: []domain.ContributorAmount{{Name: "Alice", Amount: 10}}, Total: 10},
+		},
+		Contributors: []domain.ContributorAmount{{Name: "Alice", Amount: 10}},
 		Total:        10,
 	}
 	fn := func(y, m int) (domain.MonthlyFinancialReport, error) { return report, nil }

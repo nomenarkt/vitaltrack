@@ -11,23 +11,24 @@ type FinancialEntry struct {
 	Amount      float64      `json:"amount"`
 }
 
-// NeedReport aggregates total contributions per need.
-type NeedReport struct {
-	Need  string
-	Total float64
+// ContributorAmount represents the amount contributed by a single contributor.
+type ContributorAmount struct {
+	Name   string  `json:"name"`
+	Amount float64 `json:"amount"`
 }
 
-// ContributorSummary aggregates total contributions per contributor.
-type ContributorSummary struct {
-	Contributor string
-	Total       float64
+// NeedReportBlock aggregates contributions for a given need.
+type NeedReportBlock struct {
+	Need         string              `json:"need"`
+	Contributors []ContributorAmount `json:"contributors"`
+	Total        float64             `json:"total"`
 }
 
 // MonthlyFinancialReport summarises all financial entries for a month.
 type MonthlyFinancialReport struct {
 	Year         int
 	Month        time.Month
-	Needs        []NeedReport
-	Contributors []ContributorSummary
+	Needs        []NeedReportBlock
+	Contributors []ContributorAmount
 	Total        float64
 }
