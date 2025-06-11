@@ -11,10 +11,18 @@ import (
 	"github.com/nomenarkt/medicine-tracker/backend/internal/util"
 )
 
-func StartStockAlertTicker(deps di.Dependencies, interval time.Duration) {
+func StartStockAlertTicker(deps di.Dependencies, interval time.Duration, nowFn func() time.Time) (stop func()) {
+	stopCh := make(chan struct{})
 	go func() {
+		ticker := time.NewTicker(interval)
+		defer ticker.Stop()
 		for {
-			now := time.Now().UTC()
+			select {
+			case <-stopCh:
+				return
+			default:
+			}
+			now := nowFn().UTC()
 
 			meds, err := deps.Airtable.FetchMedicines()
 			if err != nil {
@@ -60,7 +68,13 @@ func StartStockAlertTicker(deps di.Dependencies, interval time.Duration) {
 			}
 
 			log.Println("🔁 Alert ticker completed")
-			time.Sleep(interval)
+
+			select {
+			case <-stopCh:
+				return
+			case <-ticker.C:
+			}
 		}
 	}()
+	return func() { close(stopCh) }
 }

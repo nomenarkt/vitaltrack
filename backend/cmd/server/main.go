@@ -34,7 +34,7 @@ func main() {
 		}
 	}
 	if os.Getenv("ENABLE_ALERT_TICKER") == "true" {
-		background.StartStockAlertTicker(deps, tickerInterval)
+		background.StartStockAlertTicker(deps, tickerInterval, time.Now)
 	}
 
 	// 🧭 Start Telegram bot polling for `/stock` commands if enabled

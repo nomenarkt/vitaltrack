@@ -80,8 +80,9 @@ func TestStartStockAlertTicker(t *testing.T) {
 			log.SetOutput(&buf)
 			defer log.SetOutput(orig)
 
-			background.StartStockAlertTicker(deps, 10*time.Millisecond)
+			stop := background.StartStockAlertTicker(deps, 10*time.Millisecond, func() time.Time { return now })
 			time.Sleep(20 * time.Millisecond)
+			stop()
 
 			if tt.expect && len(tg.msgs) == 0 {
 				t.Fatalf("expected alert but none sent")
@@ -135,8 +136,9 @@ func TestStartStockAlertTicker_HTTP(t *testing.T) {
 			log.SetOutput(&buf)
 			defer log.SetOutput(orig)
 
-			background.StartStockAlertTicker(deps, 10*time.Millisecond)
+			stop := background.StartStockAlertTicker(deps, 10*time.Millisecond, func() time.Time { return now })
 			time.Sleep(20 * time.Millisecond)
+			stop()
 
 			if tt.expect && len(posted) == 0 {
 				t.Fatalf("expected alert POST")
