@@ -36,10 +36,10 @@ func TestGenerateFinancialReport(t *testing.T) {
 			year:  2025,
 			month: 6,
 			entries: []domain.FinancialEntry{
-				{Date: domain.NewFlexibleDate(d1), NeedLabel: "Med", NeedAmount: 20, AmountContributed: 10, Contributor: "Alice", Amount: 10},
-				{Date: domain.NewFlexibleDate(d1), NeedLabel: "Med", NeedAmount: 20, AmountContributed: 5, Contributor: "Bob", Amount: 5},
-				{Date: domain.NewFlexibleDate(d1), NeedLabel: "Food", NeedAmount: 5, AmountContributed: 2, Contributor: "Alice", Amount: 2},
-				{Date: domain.NewFlexibleDate(d2), NeedLabel: "Med", NeedAmount: 8, AmountContributed: 1, Contributor: "Charlie", Amount: 1},
+				{Date: domain.NewFlexibleDate(d1), NeedLabel: "Med", NeedAmount: 20, AmountContributed: 10, Contributor: "Alice"},
+				{Date: domain.NewFlexibleDate(d1), NeedLabel: "Med", NeedAmount: 20, AmountContributed: 5, Contributor: "Bob"},
+				{Date: domain.NewFlexibleDate(d1), NeedLabel: "Food", NeedAmount: 5, AmountContributed: 2, Contributor: "Alice"},
+				{Date: domain.NewFlexibleDate(d2), NeedLabel: "Med", NeedAmount: 8, AmountContributed: 1, Contributor: "Charlie"},
 			},
 			want: domain.MonthlyFinancialReport{
 				Year:  2025,
@@ -89,8 +89,8 @@ func TestGenerateFinancialReport(t *testing.T) {
 			year:  2025,
 			month: 7,
 			entries: []domain.FinancialEntry{
-				{Date: domain.NewFlexibleDate(d3), NeedLabel: "Med", NeedAmount: 10, AmountContributed: 10, Contributor: "Alice", Amount: 10},
-				{Date: domain.NewFlexibleDate(d3), NeedLabel: "Med", NeedAmount: 10, AmountContributed: 0, Contributor: "Bob", Amount: 0},
+				{Date: domain.NewFlexibleDate(d3), NeedLabel: "Med", NeedAmount: 10, AmountContributed: 10, Contributor: "Alice"},
+				{Date: domain.NewFlexibleDate(d3), NeedLabel: "Med", NeedAmount: 10, AmountContributed: 0, Contributor: "Bob"},
 			},
 			want: domain.MonthlyFinancialReport{
 				Year:  2025,
@@ -118,9 +118,9 @@ func TestGenerateFinancialReport(t *testing.T) {
 			year:  2025,
 			month: 8,
 			entries: []domain.FinancialEntry{
-				{Date: domain.NewFlexibleDate(d4), NeedLabel: "Food", NeedAmount: 15, AmountContributed: 0, Contributor: "Alice", Amount: 0},
-				{Date: domain.NewFlexibleDate(d4), NeedLabel: "Food", NeedAmount: 15, AmountContributed: 5, Contributor: "Bob", Amount: 5},
-				{Date: domain.NewFlexibleDate(d4), NeedLabel: "Food", NeedAmount: 15, AmountContributed: 0, Contributor: "Charlie", Amount: 0},
+				{Date: domain.NewFlexibleDate(d4), NeedLabel: "Food", NeedAmount: 15, AmountContributed: 0, Contributor: "Alice"},
+				{Date: domain.NewFlexibleDate(d4), NeedLabel: "Food", NeedAmount: 15, AmountContributed: 5, Contributor: "Bob"},
+				{Date: domain.NewFlexibleDate(d4), NeedLabel: "Food", NeedAmount: 15, AmountContributed: 0, Contributor: "Charlie"},
 			},
 			want: domain.MonthlyFinancialReport{
 				Year:  2025,
@@ -150,8 +150,8 @@ func TestGenerateFinancialReport(t *testing.T) {
 			year:  2025,
 			month: 9,
 			entries: []domain.FinancialEntry{
-				{Date: domain.NewFlexibleDate(d5), NeedLabel: "Med", NeedAmount: 100, AmountContributed: 0, Contributor: "Alice", Amount: 0},
-				{Date: domain.NewFlexibleDate(d5), NeedLabel: "Med", NeedAmount: 100, AmountContributed: 0, Contributor: "Bob", Amount: 0},
+				{Date: domain.NewFlexibleDate(d5), NeedLabel: "Med", NeedAmount: 100, AmountContributed: 0, Contributor: "Alice"},
+				{Date: domain.NewFlexibleDate(d5), NeedLabel: "Med", NeedAmount: 100, AmountContributed: 0, Contributor: "Bob"},
 			},
 			want: domain.MonthlyFinancialReport{
 				Year:  2025,

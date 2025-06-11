@@ -23,32 +23,43 @@ func (s FinancialReportService) GenerateFinancialReport(year, month int) (domain
 
 	breakdown := map[string]map[string]float64{}
 	needAmounts := map[string]float64{}
+	needSeen := map[string]bool{}
 	contributorTotals := map[string]float64{}
 	contributorSet := map[string]struct{}{}
 	total := 0.0
 
 	for _, e := range entries {
 		key := fmt.Sprintf("%s %s", e.Date.Format("2006-01-02"), e.NeedLabel)
+
 		if _, ok := breakdown[key]; !ok {
 			breakdown[key] = map[string]float64{}
-			needAmounts[key] = e.NeedAmount
 		}
 		breakdown[key][e.Contributor] += e.AmountContributed
+
+		if !needSeen[key] {
+			needAmounts[key] = e.NeedAmount
+			needSeen[key] = true
+		}
+
 		contributorTotals[e.Contributor] += e.AmountContributed
 		contributorSet[e.Contributor] = struct{}{}
 		total += e.AmountContributed
 	}
 
+	// Preferred contributor order
+	preferredOrder := []string{"Onja", "Tafita", "Henintsoa", "Mahandry"}
 	var contributorNames []string
-	for c := range contributorSet {
-		contributorNames = append(contributorNames, c)
+	for _, name := range preferredOrder {
+		if _, exists := contributorSet[name]; exists {
+			contributorNames = append(contributorNames, name)
+		}
 	}
-	sort.Strings(contributorNames)
 
 	var needKeys []string
 	for k := range breakdown {
 		needKeys = append(needKeys, k)
 	}
+	// Already in date order via formatting, but sort just in case
 	sort.Strings(needKeys)
 
 	var needs []domain.NeedReportBlock
@@ -61,7 +72,12 @@ func (s FinancialReportService) GenerateFinancialReport(year, month int) (domain
 			contribs = append(contribs, domain.ContributorAmount{Name: name, Amount: amt})
 			needTotal += amt
 		}
-		needs = append(needs, domain.NeedReportBlock{Need: k, NeedAmount: needAmounts[k], Contributors: contribs, Total: needTotal})
+		needs = append(needs, domain.NeedReportBlock{
+			Need:         k,
+			NeedAmount:   needAmounts[k],
+			Contributors: contribs,
+			Total:        needTotal,
+		})
 	}
 
 	var contributors []domain.ContributorAmount

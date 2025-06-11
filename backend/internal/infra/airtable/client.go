@@ -249,6 +249,15 @@ func (c *Client) UpdateMedicineLastAlertedDate(medicineID string, date time.Time
 	return nil
 }
 
+type airtableFinancialFields struct {
+	Date              domain.FlexibleDate `json:"Date"`
+	NeedLabel         string              `json:"NeedLabel"`
+	NeedAmount        float64             `json:"NeedAmount"`
+	AmountContributed float64             `json:"AmountContributed"`
+	MonthTag          string              `json:"MonthTag"`
+	Contributor       string              `json:"Contributor"`
+}
+
 func (c *Client) FetchFinancialEntries(year int, month time.Month) ([]domain.FinancialEntry, error) {
 	query := url.QueryEscape(fmt.Sprintf("MonthTag=\"%04d-%02d\"", year, month))
 	url := fmt.Sprintf("%s/v0/%s/%s?filterByFormula=%s",
@@ -264,13 +273,10 @@ func (c *Client) FetchFinancialEntries(year int, month time.Month) ([]domain.Fin
 	if err != nil {
 		return nil, err
 	}
-	defer func() {
-		if cerr := res.Body.Close(); cerr != nil {
-			log.Println("airtable response close error:", cerr)
-		}
-	}()
+	defer res.Body.Close()
 
 	body, _ := io.ReadAll(res.Body)
+	log.Println("🧾 Raw Airtable response:", string(body))
 
 	var errCheck map[string]interface{}
 	if json.Unmarshal(body, &errCheck) == nil {
@@ -279,18 +285,24 @@ func (c *Client) FetchFinancialEntries(year int, month time.Month) ([]domain.Fin
 		}
 	}
 
-	var response airtableResponse[domain.FinancialEntry]
+	// ✅ Use intermediate field struct
+	var response airtableResponse[airtableFinancialFields]
 	if err := json.Unmarshal(body, &response); err != nil {
 		return nil, err
 	}
 
 	var entries []domain.FinancialEntry
 	for _, rec := range response.Records {
-		e := rec.Fields
-		e.ID = rec.ID
-		if e.Date.Year() == year && e.Date.Month() == month {
-			entries = append(entries, e)
-		}
+		f := rec.Fields
+		entries = append(entries, domain.FinancialEntry{
+			ID:                rec.ID,
+			Date:              f.Date,
+			NeedLabel:         f.NeedLabel,
+			NeedAmount:        f.NeedAmount,
+			AmountContributed: f.AmountContributed,
+			MonthTag:          f.MonthTag,
+			Contributor:       f.Contributor,
+		})
 	}
 	return entries, nil
 }

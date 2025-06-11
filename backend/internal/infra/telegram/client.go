@@ -206,6 +206,7 @@ func (c *Client) handleStockCommand(chatID int64, fetchData func() ([]domain.Med
 }
 
 func (c *Client) handleFinanceCommand(chatID int64, fn func(year, month int) (domain.MonthlyFinancialReport, error), year int, month time.Month) {
+	log.Printf("💸 Generating financial report for %d-%02d", year, month)
 	report, err := fn(year, int(month))
 	if err != nil {
 		if err := c.sendTo(chatID, "\u26a0\ufe0f Failed to fetch financial data."); err != nil {
@@ -276,10 +277,24 @@ func (c *Client) sendTo(chatID int64, msg string) error {
 	return nil
 }
 
+// formatMGA formats numbers with comma separators and MGA suffix.
 func formatMGA(v float64) string {
-	return fmt.Sprintf("%.0f\u202FMGA", v)
+	s := fmt.Sprintf("%.0f", v)
+	n := len(s)
+	if n <= 3 {
+		return s + " MGA"
+	}
+	var out []byte
+	for i, c := range s {
+		if (n-i)%3 == 0 && i != 0 {
+			out = append(out, ',')
+		}
+		out = append(out, byte(c))
+	}
+	return string(out) + " MGA"
 }
 
+// renderNeedBlock formats a single need report block in monospaced layout.
 func renderNeedBlock(n domain.NeedReportBlock) string {
 	parts := strings.SplitN(n.Need, " ", 2)
 	dateStr := parts[0]
@@ -291,18 +306,18 @@ func renderNeedBlock(n domain.NeedReportBlock) string {
 	if err != nil {
 		d = time.Time{}
 	}
+
 	var lines []string
-	lines = append(lines, fmt.Sprintf("📅 %s", d.Format("January 2, 2006")))
-	if label != "" {
-		lines = append(lines, fmt.Sprintf("💊 %s", label))
-	}
-	lines = append(lines, fmt.Sprintf("💰 Total Need: %s", formatMGA(n.NeedAmount)))
-	lines = append(lines, fmt.Sprintf("💵 Contributed: %s", formatMGA(n.Total)))
+	lines = append(lines, fmt.Sprintf("📅 %s – %s", d.Format("2006-01-02"), label))
+	lines = append(lines, fmt.Sprintf("Need:        %12s", formatMGA(n.NeedAmount)))
+	lines = append(lines, fmt.Sprintf("Contributed: %12s", formatMGA(n.Total)))
 	lines = append(lines, "")
-	lines = append(lines, "| 👤 Contributor | 💵 Amount |")
-	lines = append(lines, "|----------------|-----------|")
+	lines = append(lines, fmt.Sprintf("| %-12s | %-12s |", "Contributor", "Amount"))
+	lines = append(lines, fmt.Sprintf("|%-14s|%-14s|", strings.Repeat("-", 14), strings.Repeat("-", 14)))
+
 	for _, ctb := range n.Contributors {
-		lines = append(lines, fmt.Sprintf("| %s | %s |", ctb.Name, formatMGA(ctb.Amount)))
+		lines = append(lines, fmt.Sprintf("| %-12s | %12s |", ctb.Name, formatMGA(ctb.Amount)))
 	}
-	return strings.Join(lines, "\n")
+
+	return "```text\n" + strings.Join(lines, "\n") + "\n```"
 }
