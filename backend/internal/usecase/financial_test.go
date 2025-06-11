@@ -21,6 +21,8 @@ func TestGenerateFinancialReport(t *testing.T) {
 	d1 := time.Date(2025, 6, 5, 0, 0, 0, 0, time.UTC)
 	d2 := time.Date(2025, 6, 6, 0, 0, 0, 0, time.UTC)
 	d3 := time.Date(2025, 7, 1, 0, 0, 0, 0, time.UTC)
+	d4 := time.Date(2025, 8, 10, 0, 0, 0, 0, time.UTC)
+	d5 := time.Date(2025, 9, 20, 0, 0, 0, 0, time.UTC)
 
 	tests := []struct {
 		name    string
@@ -109,6 +111,67 @@ func TestGenerateFinancialReport(t *testing.T) {
 					{Name: "Bob", Amount: 0},
 				},
 				Total: 10,
+			},
+		},
+		{
+			name:  "mixed_zero_and_positive",
+			year:  2025,
+			month: 8,
+			entries: []domain.FinancialEntry{
+				{Date: domain.NewFlexibleDate(d4), NeedLabel: "Food", NeedAmount: 15, AmountContributed: 0, Contributor: "Alice", Amount: 0},
+				{Date: domain.NewFlexibleDate(d4), NeedLabel: "Food", NeedAmount: 15, AmountContributed: 5, Contributor: "Bob", Amount: 5},
+				{Date: domain.NewFlexibleDate(d4), NeedLabel: "Food", NeedAmount: 15, AmountContributed: 0, Contributor: "Charlie", Amount: 0},
+			},
+			want: domain.MonthlyFinancialReport{
+				Year:  2025,
+				Month: time.August,
+				Needs: []domain.NeedReportBlock{
+					{
+						Need:       "2025-08-10 Food",
+						NeedAmount: 15,
+						Contributors: []domain.ContributorAmount{
+							{Name: "Alice", Amount: 0},
+							{Name: "Bob", Amount: 5},
+							{Name: "Charlie", Amount: 0},
+						},
+						Total: 5,
+					},
+				},
+				Contributors: []domain.ContributorAmount{
+					{Name: "Alice", Amount: 0},
+					{Name: "Bob", Amount: 5},
+					{Name: "Charlie", Amount: 0},
+				},
+				Total: 5,
+			},
+		},
+		{
+			name:  "all_zero_contributions",
+			year:  2025,
+			month: 9,
+			entries: []domain.FinancialEntry{
+				{Date: domain.NewFlexibleDate(d5), NeedLabel: "Med", NeedAmount: 100, AmountContributed: 0, Contributor: "Alice", Amount: 0},
+				{Date: domain.NewFlexibleDate(d5), NeedLabel: "Med", NeedAmount: 100, AmountContributed: 0, Contributor: "Bob", Amount: 0},
+			},
+			want: domain.MonthlyFinancialReport{
+				Year:  2025,
+				Month: time.September,
+				Needs: []domain.NeedReportBlock{
+					{
+						Need:       "2025-09-20 Med",
+						NeedAmount: 100,
+						Contributors: []domain.ContributorAmount{
+							{Name: "Alice", Amount: 0},
+							{Name: "Bob", Amount: 0},
+						},
+						Total: 0,
+					},
+				},
+				Contributors: []domain.ContributorAmount{
+					{Name: "Alice", Amount: 0},
+					{Name: "Bob", Amount: 0},
+				},
+				Total: 0,
 			},
 		},
 	}

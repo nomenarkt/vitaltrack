@@ -209,3 +209,53 @@ func TestFetchFinancialEntries(t *testing.T) {
 		t.Fatalf("expected single June entry, got %+v", entries)
 	}
 }
+
+func TestFetchFinancialEntries_fields(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, `{"records":[{"id":"rec1","fields":{"date":"2025-08-10","need_label":"Food","need_amount":15,"amount_contributed":5,"month_tag":"2025-08","contributor":"Bob","amount":5}}]}`)
+	}))
+	defer srv.Close()
+
+	os.Setenv("AIRTABLE_BASE_ID", "base")
+	os.Setenv("AIRTABLE_FINANCIAL_TABLE", "fin")
+	os.Setenv("AIRTABLE_TOKEN", "tok")
+
+	c := &Client{baseURL: srv.URL}
+	entries, err := c.FetchFinancialEntries(2025, time.August)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(entries) != 1 {
+		t.Fatalf("expected 1 entry, got %d", len(entries))
+	}
+	got := entries[0]
+	if got.ID != "rec1" || got.NeedLabel != "Food" || got.Contributor != "Bob" {
+		t.Fatalf("unexpected entry: %+v", got)
+	}
+	if got.NeedAmount != 15 || got.AmountContributed != 5 {
+		t.Fatalf("invalid amounts: need=%v contrib=%v", got.NeedAmount, got.AmountContributed)
+	}
+}
+
+func TestFetchFinancialEntries_zeroContribution(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, `{"records":[{"id":"rec1","fields":{"date":"2025-09-20","need_label":"Med","need_amount":100,"amount_contributed":0,"month_tag":"2025-09","contributor":"Alice","amount":0}}]}`)
+	}))
+	defer srv.Close()
+
+	os.Setenv("AIRTABLE_BASE_ID", "base")
+	os.Setenv("AIRTABLE_FINANCIAL_TABLE", "fin")
+	os.Setenv("AIRTABLE_TOKEN", "tok")
+
+	c := &Client{baseURL: srv.URL}
+	entries, err := c.FetchFinancialEntries(2025, time.September)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(entries) != 1 {
+		t.Fatalf("expected 1 entry, got %d", len(entries))
+	}
+	if entries[0].AmountContributed != 0 {
+		t.Fatalf("expected zero contribution, got %v", entries[0].AmountContributed)
+	}
+}
