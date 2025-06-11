@@ -43,7 +43,7 @@ This stack enables lean infrastructure with real-time automation and friendly UX
 
 ## Airtable Integration
 
-Our Airtable base uses two tables:
+Our Airtable base uses three tables:
 
 ### Medicines
 
@@ -67,6 +67,10 @@ Our Airtable base uses two tables:
 * `unit`
 * `medicine_id`
 
+### Financial Contributions
+
+Tracks donations for each medicine.
+
 The Airtable API token is supplied via the `AIRTABLE_TOKEN` environment variable. Never commit secrets to version control.
 
 ---
@@ -82,6 +86,7 @@ AIRTABLE_API_KEY=<airtable_key>
 AIRTABLE_BASE_ID=<airtable_base>
 AIRTABLE_MEDICINES_TABLE=Medicines
 AIRTABLE_ENTRIES_TABLE=Entries
+AIRTABLE_FINANCIAL_TABLE=<FinancialContributions table name>
 
 ENABLE_ALERT_TICKER=true
 ALERT_TICKER_INTERVAL=24h
