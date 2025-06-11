@@ -218,7 +218,7 @@ func (c *Client) handleFinanceCommand(chatID int64, fn func(year, month int) (do
 	totalNeed := 0.0
 	for _, n := range report.Needs {
 		sections = append(sections, renderNeedBlock(n))
-		totalNeed += n.Total
+		totalNeed += n.NeedAmount
 	}
 
 	var summary []string
@@ -296,7 +296,8 @@ func renderNeedBlock(n domain.NeedReportBlock) string {
 	if label != "" {
 		lines = append(lines, fmt.Sprintf("💊 %s", label))
 	}
-	lines = append(lines, fmt.Sprintf("💰 Total Need: %s", formatMGA(n.Total)))
+	lines = append(lines, fmt.Sprintf("💰 Total Need: %s", formatMGA(n.NeedAmount)))
+	lines = append(lines, fmt.Sprintf("💵 Contributed: %s", formatMGA(n.Total)))
 	lines = append(lines, "")
 	lines = append(lines, "| 👤 Contributor | 💵 Amount |")
 	lines = append(lines, "|----------------|-----------|")

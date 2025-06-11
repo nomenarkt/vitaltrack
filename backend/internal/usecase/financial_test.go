@@ -34,17 +34,18 @@ func TestGenerateFinancialReport(t *testing.T) {
 			year:  2025,
 			month: 6,
 			entries: []domain.FinancialEntry{
-				{Date: domain.NewFlexibleDate(d1), NeedLabel: "Med", Contributor: "Alice", Amount: 10},
-				{Date: domain.NewFlexibleDate(d1), NeedLabel: "Med", Contributor: "Bob", Amount: 5},
-				{Date: domain.NewFlexibleDate(d1), NeedLabel: "Food", Contributor: "Alice", Amount: 2},
-				{Date: domain.NewFlexibleDate(d2), NeedLabel: "Med", Contributor: "Charlie", Amount: 1},
+				{Date: domain.NewFlexibleDate(d1), NeedLabel: "Med", NeedAmount: 20, AmountContributed: 10, Contributor: "Alice", Amount: 10},
+				{Date: domain.NewFlexibleDate(d1), NeedLabel: "Med", NeedAmount: 20, AmountContributed: 5, Contributor: "Bob", Amount: 5},
+				{Date: domain.NewFlexibleDate(d1), NeedLabel: "Food", NeedAmount: 5, AmountContributed: 2, Contributor: "Alice", Amount: 2},
+				{Date: domain.NewFlexibleDate(d2), NeedLabel: "Med", NeedAmount: 8, AmountContributed: 1, Contributor: "Charlie", Amount: 1},
 			},
 			want: domain.MonthlyFinancialReport{
 				Year:  2025,
 				Month: time.June,
 				Needs: []domain.NeedReportBlock{
 					{
-						Need: "2025-06-05 Food",
+						Need:       "2025-06-05 Food",
+						NeedAmount: 5,
 						Contributors: []domain.ContributorAmount{
 							{Name: "Alice", Amount: 2},
 							{Name: "Bob", Amount: 0},
@@ -53,7 +54,8 @@ func TestGenerateFinancialReport(t *testing.T) {
 						Total: 2,
 					},
 					{
-						Need: "2025-06-05 Med",
+						Need:       "2025-06-05 Med",
+						NeedAmount: 20,
 						Contributors: []domain.ContributorAmount{
 							{Name: "Alice", Amount: 10},
 							{Name: "Bob", Amount: 5},
@@ -62,7 +64,8 @@ func TestGenerateFinancialReport(t *testing.T) {
 						Total: 15,
 					},
 					{
-						Need: "2025-06-06 Med",
+						Need:       "2025-06-06 Med",
+						NeedAmount: 8,
 						Contributors: []domain.ContributorAmount{
 							{Name: "Alice", Amount: 0},
 							{Name: "Bob", Amount: 0},
@@ -84,15 +87,16 @@ func TestGenerateFinancialReport(t *testing.T) {
 			year:  2025,
 			month: 7,
 			entries: []domain.FinancialEntry{
-				{Date: domain.NewFlexibleDate(d3), NeedLabel: "Med", Contributor: "Alice", Amount: 10},
-				{Date: domain.NewFlexibleDate(d3), NeedLabel: "Med", Contributor: "Bob", Amount: 0},
+				{Date: domain.NewFlexibleDate(d3), NeedLabel: "Med", NeedAmount: 10, AmountContributed: 10, Contributor: "Alice", Amount: 10},
+				{Date: domain.NewFlexibleDate(d3), NeedLabel: "Med", NeedAmount: 10, AmountContributed: 0, Contributor: "Bob", Amount: 0},
 			},
 			want: domain.MonthlyFinancialReport{
 				Year:  2025,
 				Month: time.July,
 				Needs: []domain.NeedReportBlock{
 					{
-						Need: "2025-07-01 Med",
+						Need:       "2025-07-01 Med",
+						NeedAmount: 10,
 						Contributors: []domain.ContributorAmount{
 							{Name: "Alice", Amount: 10},
 							{Name: "Bob", Amount: 0},

@@ -23,6 +23,7 @@ type ContributorAmount struct {
 // NeedReportBlock aggregates contributions for a given need.
 type NeedReportBlock struct {
 	Need         string              `json:"need"`
+	NeedAmount   float64             `json:"need_amount"`
 	Contributors []ContributorAmount `json:"contributors"`
 	Total        float64             `json:"total"`
 }
