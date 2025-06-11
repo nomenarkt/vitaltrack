@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/nomenarkt/medicine-tracker/backend/internal/domain"
+	"github.com/nomenarkt/medicine-tracker/backend/internal/usecase"
 	"github.com/nomenarkt/medicine-tracker/backend/internal/util"
 )
 
@@ -249,19 +250,29 @@ func TestHandleStockCommand_fetchError(t *testing.T) {
 	}
 }
 
+type mockFinanceRepo struct{ entries []domain.FinancialEntry }
+
+func (m mockFinanceRepo) FetchFinancialEntries(year int, month time.Month) ([]domain.FinancialEntry, error) {
+	return m.entries, nil
+}
+
 func TestHandleFinanceCommand(t *testing.T) {
 	srv, msgs := newTestServer()
 	defer srv.Close()
 
-	report := domain.MonthlyFinancialReport{
-		Year:  2025,
-		Month: time.June,
-		Needs: []domain.NeedReportBlock{
-			{Need: "Med", Contributors: []domain.ContributorAmount{{Name: "Alice", Amount: 10}}, Total: 10},
-		},
-		Contributors: []domain.ContributorAmount{{Name: "Alice", Amount: 10}},
-		Total:        10,
+	date := time.Date(2025, 6, 5, 0, 0, 0, 0, time.UTC)
+	entries := []domain.FinancialEntry{
+		{Date: domain.NewFlexibleDate(date), Need: "Med", Contributor: "Bob", Amount: 5},
+		{Date: domain.NewFlexibleDate(date), Need: "Med", Contributor: "Alice", Amount: 10},
+		{Date: domain.NewFlexibleDate(date), Need: "Med", Contributor: "Charlie", Amount: 0},
 	}
+
+	svc := usecase.FinancialReportService{Repo: mockFinanceRepo{entries: entries}}
+	report, err := svc.GenerateFinancialReport(2025, int(time.June))
+	if err != nil {
+		t.Fatalf("generate report error: %v", err)
+	}
+
 	fn := func(y, m int) (domain.MonthlyFinancialReport, error) { return report, nil }
 	c := &Client{Token: "tok", ChatID: "1", baseURL: srv.URL}
 	c.handleFinanceCommand(55, fn, 2025, time.June)
@@ -270,11 +281,33 @@ func TestHandleFinanceCommand(t *testing.T) {
 		t.Fatalf("no telegram message sent")
 	}
 	msg := (*msgs)[0]
+
 	header := util.EscapeMarkdown("*Financial Report 2025-06*")
-	summary := util.EscapeMarkdown("*Monthly Summary*")
-	row := util.EscapeMarkdown("| Alice | 10 MGA |")
-	if !strings.Contains(msg, header) || !strings.Contains(msg, summary) || !strings.Contains(msg, row) {
-		t.Errorf("unexpected message: %s", msg)
+	if !strings.Contains(msg, header) {
+		t.Fatalf("unexpected message: %s", msg)
+	}
+
+	// verify alphabetical order and zero contributions in summary
+	expectedOrder := []string{
+		util.EscapeMarkdown("*Alice:* 10 MGA"),
+		util.EscapeMarkdown("*Bob:* 5 MGA"),
+		util.EscapeMarkdown("*Charlie:* 0 MGA"),
+	}
+	last := -1
+	for _, e := range expectedOrder {
+		idx := strings.Index(msg, e)
+		if idx == -1 {
+			t.Fatalf("missing %s in message", e)
+		}
+		if idx < last {
+			t.Errorf("contributors not sorted alphabetically")
+		}
+		last = idx
+	}
+
+	row := util.EscapeMarkdown("| Charlie | 0 MGA |")
+	if !strings.Contains(msg, row) {
+		t.Errorf("expected zero contribution row, got %s", msg)
 	}
 }
 
