@@ -214,17 +214,33 @@ func (c *Client) handleFinanceCommand(chatID int64, fn func(year, month int) (do
 		return
 	}
 
-	var needLines []string
+	var sections []string
 	for _, n := range report.Needs {
-		needLines = append(needLines, fmt.Sprintf("%-20s $%.2f", n.Need, n.Total))
-	}
-	var contribLines []string
-	for _, ctb := range report.Contributors {
-		contribLines = append(contribLines, fmt.Sprintf("%-20s $%.2f", ctb.Name, ctb.Amount))
+		var lines []string
+		lines = append(lines, fmt.Sprintf("*%s*", n.Need))
+		lines = append(lines, "| Contributor | Amount |")
+		lines = append(lines, "| --- | --- |")
+		for _, ctb := range n.Contributors {
+			lines = append(lines, fmt.Sprintf("| %s | %s |", ctb.Name, fmt.Sprintf("%.0f MGA", ctb.Amount)))
+		}
+		lines = append(lines, fmt.Sprintf("*Total:* %s", fmt.Sprintf("%.0f MGA", n.Total)))
+		sections = append(sections, strings.Join(lines, "\n"))
 	}
 
-	msg := fmt.Sprintf("*Financial Report %d-%02d*\n\n*Needs*\n```text\n%s\n```\n*Contributors*\n```text\n%s\n```\n*Total:* $%.2f",
-		report.Year, report.Month, strings.Join(needLines, "\n"), strings.Join(contribLines, "\n"), report.Total)
+	var summary []string
+	summary = append(summary, "*Monthly Summary*")
+	totalNeed := 0.0
+	for _, n := range report.Needs {
+		totalNeed += n.Total
+	}
+	summary = append(summary, fmt.Sprintf("*Total Need:* %s", fmt.Sprintf("%.0f MGA", totalNeed)))
+	summary = append(summary, fmt.Sprintf("*Total Contributed:* %s", fmt.Sprintf("%.0f MGA", report.Total)))
+	for _, ctb := range report.Contributors {
+		summary = append(summary, fmt.Sprintf("*%s:* %s", ctb.Name, fmt.Sprintf("%.0f MGA", ctb.Amount)))
+	}
+
+	msg := fmt.Sprintf("*Financial Report %d-%02d*\n\n%s\n\n%s",
+		report.Year, report.Month, strings.Join(sections, "\n\n"), strings.Join(summary, "\n"))
 
 	if err := c.sendTo(chatID, msg); err != nil {
 		log.Println("failed to send /finance response:", err)

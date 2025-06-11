@@ -269,9 +269,12 @@ func TestHandleFinanceCommand(t *testing.T) {
 	if len(*msgs) == 0 {
 		t.Fatalf("no telegram message sent")
 	}
-	expected := util.EscapeMarkdown("*Financial Report 2025-06*")
-	if !strings.Contains((*msgs)[0], expected) {
-		t.Errorf("unexpected message: %s", (*msgs)[0])
+	msg := (*msgs)[0]
+	header := util.EscapeMarkdown("*Financial Report 2025-06*")
+	summary := util.EscapeMarkdown("*Monthly Summary*")
+	row := util.EscapeMarkdown("| Alice | 10 MGA |")
+	if !strings.Contains(msg, header) || !strings.Contains(msg, summary) || !strings.Contains(msg, row) {
+		t.Errorf("unexpected message: %s", msg)
 	}
 }
 
