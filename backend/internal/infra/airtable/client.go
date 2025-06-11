@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
 
@@ -249,10 +250,12 @@ func (c *Client) UpdateMedicineLastAlertedDate(medicineID string, date time.Time
 }
 
 func (c *Client) FetchFinancialEntries(year int, month time.Month) ([]domain.FinancialEntry, error) {
-	url := fmt.Sprintf("%s/v0/%s/%s",
+	query := url.QueryEscape(fmt.Sprintf("MonthTag=\"%04d-%02d\"", year, month))
+	url := fmt.Sprintf("%s/v0/%s/%s?filterByFormula=%s",
 		c.baseURL,
 		os.Getenv("AIRTABLE_BASE_ID"),
-		os.Getenv("AIRTABLE_FINANCIAL_TABLE"))
+		os.Getenv("AIRTABLE_FINANCIAL_TABLE"),
+		query)
 
 	req, _ := http.NewRequest("GET", url, nil)
 	req.Header.Set("Authorization", "Bearer "+os.Getenv("AIRTABLE_TOKEN"))

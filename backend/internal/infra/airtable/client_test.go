@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"strings"
 	"testing"
@@ -179,5 +180,32 @@ func TestFetchMedicines_AssignsID(t *testing.T) {
 	}
 	if len(meds) != 1 || meds[0].ID != "recA" {
 		t.Fatalf("expected record ID set, got %+v", meds)
+	}
+}
+
+func TestFetchFinancialEntries(t *testing.T) {
+	var query string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		query = r.URL.RawQuery
+		fmt.Fprint(w, `{"records":[{"id":"rec1","fields":{"date":"2025-06-05","need_label":"Med","need_amount":5,"amount_contributed":10,"month_tag":"2025-06","contributor":"Alice","amount":5}},{"id":"rec2","fields":{"date":"2025-07-05","need_label":"Med","need_amount":5,"amount_contributed":10,"month_tag":"2025-07","contributor":"Bob","amount":5}}]}`)
+	}))
+	defer srv.Close()
+
+	os.Setenv("AIRTABLE_BASE_ID", "base")
+	os.Setenv("AIRTABLE_FINANCIAL_TABLE", "fin")
+	os.Setenv("AIRTABLE_TOKEN", "tok")
+
+	c := &Client{baseURL: srv.URL}
+	entries, err := c.FetchFinancialEntries(2025, time.June)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	expectedQuery := "filterByFormula=" + url.QueryEscape(`MonthTag="2025-06"`)
+	if query != expectedQuery {
+		t.Errorf("query = %s, want %s", query, expectedQuery)
+	}
+	if len(entries) != 1 || entries[0].ID != "rec1" {
+		t.Fatalf("expected single June entry, got %+v", entries)
 	}
 }
