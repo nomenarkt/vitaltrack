@@ -96,7 +96,10 @@ type GetUpdatesResponse struct {
 	Result []Update `json:"result"`
 }
 
-func (c *Client) PollForCommands(fetchData func() ([]domain.Medicine, []domain.StockEntry, error)) {
+func (c *Client) PollForCommands(
+	fetchData func() ([]domain.Medicine, []domain.StockEntry, error),
+	reportFn func(year, month int) (domain.MonthlyFinancialReport, error),
+) {
 	var lastUpdateID int
 
 	log.Println("📨 Telegram polling started...")
@@ -126,9 +129,20 @@ func (c *Client) PollForCommands(fetchData func() ([]domain.Medicine, []domain.S
 
 		for _, update := range updates.Result {
 			lastUpdateID = update.UpdateID
-			if update.Message.Text == "/stock" {
+			switch {
+			case update.Message.Text == "/stock":
 				log.Println("🟡 /stock command triggered")
 				go c.handleStockCommand(update.Message.Chat.ID, fetchData)
+			case strings.HasPrefix(update.Message.Text, "/finance"):
+				log.Println("🟡 /finance command triggered")
+				year, month := time.Now().Year(), time.Now().Month()
+				parts := strings.Fields(update.Message.Text)
+				if len(parts) > 1 {
+					if t, err := time.Parse("2006-01", parts[1]); err == nil {
+						year, month = t.Year(), t.Month()
+					}
+				}
+				go c.handleFinanceCommand(update.Message.Chat.ID, reportFn, year, month)
 			}
 		}
 	}
@@ -188,6 +202,32 @@ func (c *Client) handleStockCommand(chatID int64, fetchData func() ([]domain.Med
 		log.Println("failed to send /stock response:", err)
 	} else {
 		log.Println("sent /stock forecast")
+	}
+}
+
+func (c *Client) handleFinanceCommand(chatID int64, fn func(year, month int) (domain.MonthlyFinancialReport, error), year int, month time.Month) {
+	report, err := fn(year, int(month))
+	if err != nil {
+		if err := c.sendTo(chatID, "\u26a0\ufe0f Failed to fetch financial data."); err != nil {
+			log.Println("failed to send /finance response:", err)
+		}
+		return
+	}
+
+	var needLines []string
+	for _, n := range report.Needs {
+		needLines = append(needLines, fmt.Sprintf("%-20s $%.2f", n.Need, n.Total))
+	}
+	var contribLines []string
+	for _, ctb := range report.Contributors {
+		contribLines = append(contribLines, fmt.Sprintf("%-20s $%.2f", ctb.Contributor, ctb.Total))
+	}
+
+	msg := fmt.Sprintf("*Financial Report %d-%02d*\n\n*Needs*\n```text\n%s\n```\n*Contributors*\n```text\n%s\n```\n*Total:* $%.2f",
+		report.Year, report.Month, strings.Join(needLines, "\n"), strings.Join(contribLines, "\n"), report.Total)
+
+	if err := c.sendTo(chatID, msg); err != nil {
+		log.Println("failed to send /finance response:", err)
 	}
 }
 

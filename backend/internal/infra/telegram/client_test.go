@@ -249,6 +249,30 @@ func TestHandleStockCommand_fetchError(t *testing.T) {
 	}
 }
 
+func TestHandleFinanceCommand(t *testing.T) {
+	srv, msgs := newTestServer()
+	defer srv.Close()
+
+	report := domain.MonthlyFinancialReport{
+		Year:         2025,
+		Month:        time.June,
+		Needs:        []domain.NeedReport{{Need: "Med", Total: 10}},
+		Contributors: []domain.ContributorSummary{{Contributor: "Alice", Total: 10}},
+		Total:        10,
+	}
+	fn := func(y, m int) (domain.MonthlyFinancialReport, error) { return report, nil }
+	c := &Client{Token: "tok", ChatID: "1", baseURL: srv.URL}
+	c.handleFinanceCommand(55, fn, 2025, time.June)
+
+	if len(*msgs) == 0 {
+		t.Fatalf("no telegram message sent")
+	}
+	expected := util.EscapeMarkdown("*Financial Report 2025-06*")
+	if !strings.Contains((*msgs)[0], expected) {
+		t.Errorf("unexpected message: %s", (*msgs)[0])
+	}
+}
+
 func TestSendTo_escapesMarkdown(t *testing.T) {
 	srv, msgs := newTestServer()
 	defer srv.Close()

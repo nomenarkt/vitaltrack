@@ -36,6 +36,9 @@ func (m *mockStockDataPort) CreateStockEntry(entry domain.StockEntry) error {
 func (m *mockStockDataPort) UpdateForecastDate(medicineID string, startDate time.Time, outOfStockDate time.Time) error {
 	return nil
 }
+func (m *mockStockDataPort) FetchFinancialEntries(int, time.Month) ([]domain.FinancialEntry, error) {
+	return nil, nil
+}
 
 func TestGenerateOutOfStockForecastMessage(t *testing.T) {
 	mock := &mockStockDataPort{}

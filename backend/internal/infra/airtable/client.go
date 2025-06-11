@@ -247,3 +247,47 @@ func (c *Client) UpdateMedicineLastAlertedDate(medicineID string, date time.Time
 	log.Printf("🆗 updated last_alerted_date response=%s", string(b))
 	return nil
 }
+
+func (c *Client) FetchFinancialEntries(year int, month time.Month) ([]domain.FinancialEntry, error) {
+	url := fmt.Sprintf("%s/v0/%s/%s",
+		c.baseURL,
+		os.Getenv("AIRTABLE_BASE_ID"),
+		os.Getenv("AIRTABLE_FINANCIAL_TABLE"))
+
+	req, _ := http.NewRequest("GET", url, nil)
+	req.Header.Set("Authorization", "Bearer "+os.Getenv("AIRTABLE_TOKEN"))
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if cerr := res.Body.Close(); cerr != nil {
+			log.Println("airtable response close error:", cerr)
+		}
+	}()
+
+	body, _ := io.ReadAll(res.Body)
+
+	var errCheck map[string]interface{}
+	if json.Unmarshal(body, &errCheck) == nil {
+		if errVal, exists := errCheck["error"]; exists {
+			return nil, fmt.Errorf("airtable error: %v", errVal)
+		}
+	}
+
+	var response airtableResponse[domain.FinancialEntry]
+	if err := json.Unmarshal(body, &response); err != nil {
+		return nil, err
+	}
+
+	var entries []domain.FinancialEntry
+	for _, rec := range response.Records {
+		e := rec.Fields
+		e.ID = rec.ID
+		if e.Date.Year() == year && e.Date.Month() == month {
+			entries = append(entries, e)
+		}
+	}
+	return entries, nil
+}

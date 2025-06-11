@@ -25,6 +25,9 @@ func (m *mockAirtable) FetchMedicines() ([]domain.Medicine, error)            { 
 func (m *mockAirtable) FetchStockEntries() ([]domain.StockEntry, error)       { return m.entries, nil }
 func (m *mockAirtable) CreateStockEntry(domain.StockEntry) error              { return nil }
 func (m *mockAirtable) UpdateForecastDate(string, time.Time, time.Time) error { return nil }
+func (m *mockAirtable) FetchFinancialEntries(int, time.Month) ([]domain.FinancialEntry, error) {
+	return nil, nil
+}
 
 type mockTelegram struct{ msgs []string }
 
@@ -32,7 +35,8 @@ func (m *mockTelegram) SendTelegramMessage(msg string) error {
 	m.msgs = append(m.msgs, msg)
 	return nil
 }
-func (m *mockTelegram) PollForCommands(func() ([]domain.Medicine, []domain.StockEntry, error)) {}
+func (m *mockTelegram) PollForCommands(func() ([]domain.Medicine, []domain.StockEntry, error), func(int, int) (domain.MonthlyFinancialReport, error)) {
+}
 
 type httpTelegram struct {
 	url    string
@@ -47,7 +51,8 @@ func (h *httpTelegram) SendTelegramMessage(msg string) error {
 	return err
 }
 
-func (h *httpTelegram) PollForCommands(func() ([]domain.Medicine, []domain.StockEntry, error)) {}
+func (h *httpTelegram) PollForCommands(func() ([]domain.Medicine, []domain.StockEntry, error), func(int, int) (domain.MonthlyFinancialReport, error)) {
+}
 
 func TestStartStockAlertTicker(t *testing.T) {
 	now := time.Date(2025, 6, 4, 0, 0, 0, 0, time.UTC)

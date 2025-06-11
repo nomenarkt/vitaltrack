@@ -29,6 +29,9 @@ func (m *mockAirtable) UpdateMedicineLastAlertedDate(medicineID string, date tim
 	m.updatedDate = date
 	return nil
 }
+func (m *mockAirtable) FetchFinancialEntries(int, time.Month) ([]domain.FinancialEntry, error) {
+	return nil, nil
+}
 
 type mockTelegram struct {
 	sent []string
@@ -39,7 +42,7 @@ func (m *mockTelegram) SendTelegramMessage(msg string) error {
 	return nil
 }
 
-func (m *mockTelegram) PollForCommands(fetchData func() ([]domain.Medicine, []domain.StockEntry, error)) {
+func (m *mockTelegram) PollForCommands(fetchData func() ([]domain.Medicine, []domain.StockEntry, error), _ func(int, int) (domain.MonthlyFinancialReport, error)) {
 	// no-op
 }
 

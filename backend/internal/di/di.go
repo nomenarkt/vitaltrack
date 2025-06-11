@@ -12,6 +12,7 @@ type Dependencies struct {
 	Telegram     ports.TelegramService
 	StockChecker *usecase.StockChecker
 	ForecastSvc  usecase.OutOfStockService
+	FinancialSvc usecase.FinancialReportService
 }
 
 func Init() Dependencies {
@@ -28,5 +29,6 @@ func Init() Dependencies {
 		ForecastSvc: usecase.OutOfStockService{
 			Airtable: at,
 		},
+		FinancialSvc: usecase.FinancialReportService{Repo: at},
 	}
 }
