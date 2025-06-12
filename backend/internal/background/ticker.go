@@ -79,3 +79,7 @@ func StartStockAlertTicker(ctx context.Context, deps di.Dependencies, interval t
 	}()
 	return func() { close(stopCh) }
 }
+
+func init() {
+	di.StartTickerFunc = StartStockAlertTicker
+}

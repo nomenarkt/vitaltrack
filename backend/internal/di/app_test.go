@@ -83,3 +83,76 @@ func TestStartFromEnv(t *testing.T) {
 		})
 	}
 }
+
+func TestNewApp(t *testing.T) {
+	os.Setenv("AIRTABLE_BASE_ID", "a")
+	os.Setenv("AIRTABLE_MEDICINES_TABLE", "b")
+	os.Setenv("AIRTABLE_ENTRIES_TABLE", "c")
+	os.Setenv("AIRTABLE_TOKEN", "d")
+	os.Setenv("TELEGRAM_BOT_TOKEN", "e")
+	os.Setenv("TELEGRAM_CHAT_ID", "f")
+	defer func() {
+		os.Unsetenv("AIRTABLE_BASE_ID")
+		os.Unsetenv("AIRTABLE_MEDICINES_TABLE")
+		os.Unsetenv("AIRTABLE_ENTRIES_TABLE")
+		os.Unsetenv("AIRTABLE_TOKEN")
+		os.Unsetenv("TELEGRAM_BOT_TOKEN")
+		os.Unsetenv("TELEGRAM_CHAT_ID")
+	}()
+
+	tests := []struct {
+		name           string
+		tickerEnabled  bool
+		pollingEnabled bool
+		expectTicker   bool
+		expectPolling  bool
+	}{
+		{name: "none"},
+		{name: "ticker_only", tickerEnabled: true, expectTicker: true},
+		{name: "polling_only", pollingEnabled: true, expectPolling: true},
+		{name: "both", tickerEnabled: true, pollingEnabled: true, expectTicker: true, expectPolling: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.tickerEnabled {
+				os.Setenv("ENABLE_ALERT_TICKER", "true")
+			} else {
+				os.Unsetenv("ENABLE_ALERT_TICKER")
+			}
+			if tt.pollingEnabled {
+				os.Setenv("ENABLE_TELEGRAM_POLLING", "true")
+			} else {
+				os.Unsetenv("ENABLE_TELEGRAM_POLLING")
+			}
+			defer os.Unsetenv("ENABLE_ALERT_TICKER")
+			defer os.Unsetenv("ENABLE_TELEGRAM_POLLING")
+
+			tickerCalled := false
+			pollingCalled := false
+			origTicker := di.StartTickerFunc
+			origPolling := di.PollingFunc
+			di.StartTickerFunc = func(ctx context.Context, deps di.Dependencies, d time.Duration, nowFn func() time.Time) func() {
+				tickerCalled = true
+				return func() {}
+			}
+			di.PollingFunc = func(ctx context.Context, deps di.Dependencies) { pollingCalled = true }
+			defer func() {
+				di.StartTickerFunc = origTicker
+				di.PollingFunc = origPolling
+			}()
+
+			app := di.NewApp()
+			if app == nil {
+				t.Fatal("app is nil")
+			}
+
+			if tt.expectTicker != tickerCalled {
+				t.Errorf("ticker call = %v, want %v", tickerCalled, tt.expectTicker)
+			}
+			if tt.expectPolling != pollingCalled {
+				t.Errorf("polling call = %v, want %v", pollingCalled, tt.expectPolling)
+			}
+		})
+	}
+}

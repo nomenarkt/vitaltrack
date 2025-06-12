@@ -4,6 +4,9 @@ import (
 	"context"
 	"os"
 	"time"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/nomenarkt/vitaltrack/backend/internal/server"
 )
 
 var (
@@ -30,4 +33,23 @@ func StartFromEnv(ctx context.Context, deps Dependencies) {
 	if os.Getenv("ENABLE_TELEGRAM_POLLING") == "true" && PollingFunc != nil {
 		PollingFunc(ctx, deps)
 	}
+}
+
+// NewApp initializes the Fiber application with all routes and optional
+// background processes. It resolves dependencies via Init() and returns the
+// configured *fiber.App instance.
+func NewApp() *fiber.App {
+	app := fiber.New()
+
+	deps := Init()
+
+	server.SetupRoutes(app, deps.StockChecker, deps.ForecastSvc, deps.MedicineSvc, deps.Airtable, deps.Telegram)
+
+	if PollingFunc == nil {
+		PollingFunc = StartTelegramPolling
+	}
+
+	StartFromEnv(context.Background(), deps)
+
+	return app
 }
