@@ -1,3 +1,4 @@
+// Package stockcalc computes monthly supply usage.
 package stockcalc
 
 import (

@@ -1,3 +1,4 @@
+// Package telegram provides Telegram Bot API helpers.
 package telegram
 
 import (

@@ -1,3 +1,4 @@
+// Package background schedules periodic tasks like alert tickers.
 package background
 
 import (

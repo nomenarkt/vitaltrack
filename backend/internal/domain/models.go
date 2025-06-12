@@ -1,3 +1,4 @@
+// Package domain contains core business models.
 package domain
 
 type Medicine struct {

@@ -1,3 +1,4 @@
+// Package forecast calculates medicine depletion dates.
 package forecast
 
 import (

@@ -1,3 +1,4 @@
+// Package ports defines interfaces for external services.
 package ports
 
 import (
