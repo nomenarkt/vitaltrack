@@ -9,6 +9,7 @@ import (
 	"github.com/nomenarkt/vitaltrack/backend/internal/usecase"
 )
 
+// Dependencies groups runtime service implementations.
 type Dependencies struct {
 	Airtable     ports.StockDataPort // satisfies AirtableService + StockDataPort
 	Telegram     ports.TelegramService
@@ -19,6 +20,7 @@ type Dependencies struct {
 	MedicineSvc  usecase.MedicineService
 }
 
+// Init initializes all production dependencies.
 func Init() Dependencies {
 	at := airtable.NewClient()
 	tg := telegram.NewClient()

@@ -16,10 +16,12 @@ import (
 	"github.com/nomenarkt/vitaltrack/backend/internal/domain"
 )
 
+// Client talks to the Airtable REST API.
 type Client struct {
 	baseURL string
 }
 
+// NewClient returns a Client configured from environment variables.
 func NewClient() *Client {
 	_ = godotenv.Load()
 
@@ -48,6 +50,7 @@ type airtableResponse[T any] struct {
 	Records []airtableRecord[T] `json:"records"`
 }
 
+// FetchMedicines retrieves all medicines from Airtable.
 func (c *Client) FetchMedicines() ([]domain.Medicine, error) {
 	url := fmt.Sprintf("%s/v0/%s/%s",
 		c.baseURL,
@@ -90,6 +93,7 @@ func (c *Client) FetchMedicines() ([]domain.Medicine, error) {
 	return meds, nil
 }
 
+// FetchStockEntries retrieves all stock entry records from Airtable.
 func (c *Client) FetchStockEntries() ([]domain.StockEntry, error) {
 	url := fmt.Sprintf("%s/v0/%s/%s",
 		c.baseURL,
@@ -132,6 +136,7 @@ func (c *Client) FetchStockEntries() ([]domain.StockEntry, error) {
 	return entries, nil
 }
 
+// CreateStockEntry adds a new stock entry record in Airtable.
 func (c *Client) CreateStockEntry(entry domain.StockEntry) error {
 	url := fmt.Sprintf("%s/v0/%s/%s",
 		c.baseURL,
@@ -171,6 +176,7 @@ func (c *Client) CreateStockEntry(entry domain.StockEntry) error {
 	return nil
 }
 
+// UpdateForecastDate records the latest forecast date for a medicine in Airtable.
 func (c *Client) UpdateForecastDate(medicineID string, forecastDate, updatedAt time.Time) error {
 	url := fmt.Sprintf("%s/v0/%s/%s/%s",
 		c.baseURL,
@@ -210,6 +216,7 @@ func (c *Client) UpdateForecastDate(medicineID string, forecastDate, updatedAt t
 	return nil
 }
 
+// UpdateMedicineLastAlertedDate saves the last alert date for a medicine.
 func (c *Client) UpdateMedicineLastAlertedDate(medicineID string, date time.Time) error {
 	url := fmt.Sprintf("%s/v0/%s/%s/%s",
 		c.baseURL,
@@ -259,6 +266,7 @@ type airtableFinancialFields struct {
 	Contributor       string              `json:"Contributor"`
 }
 
+// FetchFinancialEntries retrieves all financial entries for the given month.
 func (c *Client) FetchFinancialEntries(year int, month time.Month) ([]domain.FinancialEntry, error) {
 	query := url.QueryEscape(fmt.Sprintf("MonthTag=\"%04d-%02d\"", year, month))
 	url := fmt.Sprintf("%s/v0/%s/%s?filterByFormula=%s",

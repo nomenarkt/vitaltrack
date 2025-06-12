@@ -7,6 +7,7 @@ import (
 	"github.com/nomenarkt/vitaltrack/backend/internal/logic/forecast"
 )
 
+// HandleOutOfStockCommand sends an out-of-stock forecast via Telegram.
 func HandleOutOfStockCommand() error {
 	at := airtable.NewClient()
 	tg := NewClient()

@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// FlexibleDate allows JSON unmarshalling of both RFC3339 and YYYY-MM-DD dates.
 type FlexibleDate struct {
 	time.Time
 }

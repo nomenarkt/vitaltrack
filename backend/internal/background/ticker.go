@@ -12,6 +12,9 @@ import (
 	"github.com/nomenarkt/vitaltrack/backend/internal/util"
 )
 
+// StartStockAlertTicker begins a goroutine that checks stock levels at the given
+// interval and sends Telegram alerts when medicines are running low. The
+// returned function stops the ticker.
 func StartStockAlertTicker(ctx context.Context, deps di.Dependencies, interval time.Duration, nowFn func() time.Time) (stop func()) {
 	deps.Logger.Info(ctx, "alert ticker started", "interval", interval)
 	stopCh := make(chan struct{})

@@ -12,6 +12,9 @@ import (
 	"github.com/nomenarkt/vitaltrack/backend/internal/logic/stockcalc"
 )
 
+// GenerateOutOfStockForecastMessage builds a Markdown-formatted forecast of when
+// each medicine will run out of stock. It optionally updates the forecast date
+// in the provided repository.
 func GenerateOutOfStockForecastMessage(
 	meds []domain.Medicine,
 	entries []domain.StockEntry,

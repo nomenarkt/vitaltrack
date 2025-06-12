@@ -1,6 +1,7 @@
 // Package domain contains core business models.
 package domain
 
+// Medicine represents a medicine tracked for stock levels.
 type Medicine struct {
 	ID                     string        `json:"id"`
 	Name                   string        `json:"name"`
@@ -14,6 +15,7 @@ type Medicine struct {
 	LastAlertedDate        *FlexibleDate `json:"last_alerted_date,omitempty"`
 }
 
+// StockEntry records a consumption or purchase event for a medicine.
 type StockEntry struct {
 	ID         string       `json:"id"`
 	MedicineID string       `json:"medicine_id"`
