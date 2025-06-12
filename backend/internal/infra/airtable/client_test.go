@@ -30,9 +30,15 @@ func TestUpdateMedicineLastAlertedDate(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	os.Setenv("AIRTABLE_BASE_ID", baseID)
-	os.Setenv("AIRTABLE_MEDICINES_TABLE", table)
-	os.Setenv("AIRTABLE_TOKEN", "tok")
+	if err := os.Setenv("AIRTABLE_BASE_ID", baseID); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Setenv("AIRTABLE_MEDICINES_TABLE", table); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Setenv("AIRTABLE_TOKEN", "tok"); err != nil {
+		t.Fatal(err)
+	}
 
 	c := &Client{baseURL: srv.URL}
 
@@ -68,9 +74,15 @@ func TestUpdateMedicineLastAlertedDate_ignoresMismatch(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	os.Setenv("AIRTABLE_BASE_ID", "base")
-	os.Setenv("AIRTABLE_MEDICINES_TABLE", "table")
-	os.Setenv("AIRTABLE_TOKEN", "tok")
+	if err := os.Setenv("AIRTABLE_BASE_ID", "base"); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Setenv("AIRTABLE_MEDICINES_TABLE", "table"); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Setenv("AIRTABLE_TOKEN", "tok"); err != nil {
+		t.Fatal(err)
+	}
 
 	c := &Client{baseURL: srv.URL}
 
@@ -96,9 +108,15 @@ func TestUpdateMedicineLastAlertedDate_errorStatus(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	os.Setenv("AIRTABLE_BASE_ID", "bid")
-	os.Setenv("AIRTABLE_MEDICINES_TABLE", "tab")
-	os.Setenv("AIRTABLE_TOKEN", "tok")
+	if err := os.Setenv("AIRTABLE_BASE_ID", "bid"); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Setenv("AIRTABLE_MEDICINES_TABLE", "tab"); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Setenv("AIRTABLE_TOKEN", "tok"); err != nil {
+		t.Fatal(err)
+	}
 
 	c := &Client{baseURL: srv.URL}
 
@@ -132,9 +150,15 @@ func TestUpdateForecastDate(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	os.Setenv("AIRTABLE_BASE_ID", baseID)
-	os.Setenv("AIRTABLE_MEDICINES_TABLE", table)
-	os.Setenv("AIRTABLE_TOKEN", "tok")
+	if err := os.Setenv("AIRTABLE_BASE_ID", baseID); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Setenv("AIRTABLE_MEDICINES_TABLE", table); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Setenv("AIRTABLE_TOKEN", "tok"); err != nil {
+		t.Fatal(err)
+	}
 
 	c := &Client{baseURL: srv.URL}
 
@@ -169,9 +193,15 @@ func TestFetchMedicines_AssignsID(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	os.Setenv("AIRTABLE_BASE_ID", "base")
-	os.Setenv("AIRTABLE_MEDICINES_TABLE", "table")
-	os.Setenv("AIRTABLE_TOKEN", "tok")
+	if err := os.Setenv("AIRTABLE_BASE_ID", "base"); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Setenv("AIRTABLE_MEDICINES_TABLE", "table"); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Setenv("AIRTABLE_TOKEN", "tok"); err != nil {
+		t.Fatal(err)
+	}
 
 	c := &Client{baseURL: srv.URL}
 	meds, err := c.FetchMedicines()
@@ -191,9 +221,15 @@ func TestFetchFinancialEntries(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	os.Setenv("AIRTABLE_BASE_ID", "base")
-	os.Setenv("AIRTABLE_FINANCIAL_TABLE", "fin")
-	os.Setenv("AIRTABLE_TOKEN", "tok")
+	if err := os.Setenv("AIRTABLE_BASE_ID", "base"); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Setenv("AIRTABLE_FINANCIAL_TABLE", "fin"); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Setenv("AIRTABLE_TOKEN", "tok"); err != nil {
+		t.Fatal(err)
+	}
 
 	c := &Client{baseURL: srv.URL}
 	entries, err := c.FetchFinancialEntries(2025, time.June)
@@ -216,9 +252,15 @@ func TestFetchFinancialEntries_fields(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	os.Setenv("AIRTABLE_BASE_ID", "base")
-	os.Setenv("AIRTABLE_FINANCIAL_TABLE", "fin")
-	os.Setenv("AIRTABLE_TOKEN", "tok")
+	if err := os.Setenv("AIRTABLE_BASE_ID", "base"); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Setenv("AIRTABLE_FINANCIAL_TABLE", "fin"); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Setenv("AIRTABLE_TOKEN", "tok"); err != nil {
+		t.Fatal(err)
+	}
 
 	c := &Client{baseURL: srv.URL}
 	entries, err := c.FetchFinancialEntries(2025, time.August)
@@ -243,9 +285,15 @@ func TestFetchFinancialEntries_zeroContribution(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	os.Setenv("AIRTABLE_BASE_ID", "base")
-	os.Setenv("AIRTABLE_FINANCIAL_TABLE", "fin")
-	os.Setenv("AIRTABLE_TOKEN", "tok")
+	if err := os.Setenv("AIRTABLE_BASE_ID", "base"); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Setenv("AIRTABLE_FINANCIAL_TABLE", "fin"); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Setenv("AIRTABLE_TOKEN", "tok"); err != nil {
+		t.Fatal(err)
+	}
 
 	c := &Client{baseURL: srv.URL}
 	entries, err := c.FetchFinancialEntries(2025, time.September)

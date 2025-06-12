@@ -45,12 +45,16 @@ func TestStartFromEnv(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.tickerEnabled {
-				os.Setenv("ENABLE_ALERT_TICKER", "true")
+				if err := os.Setenv("ENABLE_ALERT_TICKER", "true"); err != nil {
+					t.Fatal(err)
+				}
 			} else {
 				os.Unsetenv("ENABLE_ALERT_TICKER")
 			}
 			if tt.pollingEnabled {
-				os.Setenv("ENABLE_TELEGRAM_POLLING", "true")
+				if err := os.Setenv("ENABLE_TELEGRAM_POLLING", "true"); err != nil {
+					t.Fatal(err)
+				}
 			} else {
 				os.Unsetenv("ENABLE_TELEGRAM_POLLING")
 			}
@@ -85,12 +89,24 @@ func TestStartFromEnv(t *testing.T) {
 }
 
 func TestNewApp(t *testing.T) {
-	os.Setenv("AIRTABLE_BASE_ID", "a")
-	os.Setenv("AIRTABLE_MEDICINES_TABLE", "b")
-	os.Setenv("AIRTABLE_ENTRIES_TABLE", "c")
-	os.Setenv("AIRTABLE_TOKEN", "d")
-	os.Setenv("TELEGRAM_BOT_TOKEN", "e")
-	os.Setenv("TELEGRAM_CHAT_ID", "f")
+	if err := os.Setenv("AIRTABLE_BASE_ID", "a"); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Setenv("AIRTABLE_MEDICINES_TABLE", "b"); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Setenv("AIRTABLE_ENTRIES_TABLE", "c"); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Setenv("AIRTABLE_TOKEN", "d"); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Setenv("TELEGRAM_BOT_TOKEN", "e"); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Setenv("TELEGRAM_CHAT_ID", "f"); err != nil {
+		t.Fatal(err)
+	}
 	defer func() {
 		os.Unsetenv("AIRTABLE_BASE_ID")
 		os.Unsetenv("AIRTABLE_MEDICINES_TABLE")
@@ -116,12 +132,16 @@ func TestNewApp(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.tickerEnabled {
-				os.Setenv("ENABLE_ALERT_TICKER", "true")
+				if err := os.Setenv("ENABLE_ALERT_TICKER", "true"); err != nil {
+					t.Fatal(err)
+				}
 			} else {
 				os.Unsetenv("ENABLE_ALERT_TICKER")
 			}
 			if tt.pollingEnabled {
-				os.Setenv("ENABLE_TELEGRAM_POLLING", "true")
+				if err := os.Setenv("ENABLE_TELEGRAM_POLLING", "true"); err != nil {
+					t.Fatal(err)
+				}
 			} else {
 				os.Unsetenv("ENABLE_TELEGRAM_POLLING")
 			}
