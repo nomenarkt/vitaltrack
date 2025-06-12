@@ -47,19 +47,18 @@ jobs:
       - name: ✅ Run unit tests
         run: go test -v ./...
 
-      - name: 🧪 Run Go Coverage
+      - name: 🧪 Generate test coverage
         run: |
-          # Ensure coverage.out exists in the working directory. If changed, sync Codecov path and test.
-          go test -coverprofile=coverage.out ./...
+          go test -coverprofile=coverage.txt ./...
           ls -lah .
-          test -f coverage.out
+          test -f coverage.txt
 
       - name: 📊 Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         with:
-          files: ./coverage.out
+          files: ./coverage.txt
           flags: backend
-          working-directory: backend
+          token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
 
       - name: 🧱 Build binary
