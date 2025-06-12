@@ -1,9 +1,10 @@
+# 📂 .github/workflows/ci.yml
 name: Go CI
 
 on:
   push:
   pull_request:
-  # Optional: enable nightly health checks
+  # Optional: schedule nightly checks
   # schedule:
   #   - cron: '0 2 * * *'
 
@@ -28,12 +29,12 @@ jobs:
 
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: 🛠️ Set up Go
-        uses: actions/setup-go@v4
+      - name: 🛠 Set up Go
+        uses: actions/setup-go@v5
         with:
-          go-version: '1.24.1'
+          go-version: '1.22.4'
 
       - name: 🔍 Cache Go modules
         uses: actions/cache@v3
@@ -67,12 +68,13 @@ jobs:
       - name: 🧹 Run golangci-lint
         uses: golangci/golangci-lint-action@v5
         with:
-          version: v1.64.8
+          version: v1.54.2
           working-directory: backend
+          args: --timeout=3m ./...
 
-      # Optional: security scanning with gosec
-      # - name: 🔐 Static security analysis
-      #   uses: securego/gosec@master
+      # Optional: security scanning
+      # - name: 🔐 Run gosec for static security analysis
+      #   uses: securego/gosec@v2
       #   with:
       #     args: ./...
 
@@ -82,7 +84,7 @@ jobs:
 
     steps:
       - name: 📥 Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: 🐳 Docker Build
         run: docker build -f Dockerfile -t vitaltrack .

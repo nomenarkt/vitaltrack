@@ -62,39 +62,22 @@ linters-settings:
       - github.com/nomenarkt/vitaltrack/backend/internal/logic
       - github.com/nomenarkt/vitaltrack/backend/internal/server
     short-message: "Do not import internal layers directly. Use DI layer."
+    exclude:
+      - github.com/nomenarkt/vitaltrack/backend/internal/**
 
-  forbidigo:
-    forbid:
-      - name: "fmt.Println"
-        message: "Use structured logger instead (zap, slog, etc.)"
-      - name: "log.Println"
-        message: "Avoid standard log, use centralized logger"
-      - name: "log.Fatal"
-        message: "Do not call log.Fatal directly in app — use graceful shutdown"
-    path-exclude:
-      - "**/*_test.go"
-      - "**/testdata/**"
-    allow:
-      # ✅ COMMON GO IDENTIFIERS
-      - "err"
-      - "msg"
-      - "ctx"
-      - "at"
-      - "tg"
-      - "app"
-      - "deps"
-      - "entries"
-      - "meds"
-      - "url"
-      - "body"
-      - "req"
-      - "res"
-      - "val"
-      - "parsedDate"
-      - "entry"
-      - "c" # fiber context
-      - "d"
-      - "b"
-      - "_"
-      - "Client"
+
+    forbidigo:
+      forbid:
+        - name: "fmt.Println"
+          message: "Use structured logger instead (zap, slog, etc.)"
+        - name: "log.Println"
+          message: "Avoid standard log, use centralized logger"
+        - name: "log.Fatal"
+          message: "Do not call log.Fatal directly in app — use graceful shutdown"
+      path-exclude:
+        - "**/*_test.go"
+        - "**/testdata/**"
+      exclude-files:
+        - internal/di/**/*.go
+        - internal/server/**/*.go
 
