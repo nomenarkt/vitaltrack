@@ -47,8 +47,12 @@ jobs:
       - name: ✅ Run unit tests
         run: go test -v ./...
 
-      - name: 🧪 Generate test coverage
-        run: go test -coverprofile=coverage.out ./...
+      - name: 🧪 Run Go Coverage
+        run: |
+          # Ensure coverage.out exists at root. If changed, sync Codecov path and test.
+          go test -coverprofile=../coverage.out ./...
+          ls -lah ..
+          test -f ../coverage.out
 
       - name: 📊 Upload coverage to Codecov
         uses: codecov/codecov-action@v3
