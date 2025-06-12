@@ -49,16 +49,17 @@ jobs:
 
       - name: 🧪 Run Go Coverage
         run: |
-          # Ensure coverage.out exists at root. If changed, sync Codecov path and test.
-          go test -coverprofile=../coverage.out ./...
-          ls -lah ..
-          test -f ../coverage.out
+          # Ensure coverage.out exists in the working directory. If changed, sync Codecov path and test.
+          go test -coverprofile=coverage.out ./...
+          ls -lah .
+          test -f coverage.out
 
       - name: 📊 Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
           files: ./coverage.out
           flags: backend
+          working-directory: backend
           fail_ci_if_error: true
 
       - name: 🧱 Build binary
