@@ -1,3 +1,4 @@
+// Package usecase orchestrates business logic flows.
 package usecase
 
 import (

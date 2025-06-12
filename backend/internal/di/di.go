@@ -1,3 +1,4 @@
+// Package di wires application dependencies for runtime use.
 package di
 
 import (

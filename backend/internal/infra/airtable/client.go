@@ -1,3 +1,4 @@
+// Package airtable handles Airtable API interactions.
 package airtable
 
 import (

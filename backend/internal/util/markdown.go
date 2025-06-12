@@ -1,3 +1,4 @@
+// Package util provides helper utilities for the bot.
 package util
 
 import (
