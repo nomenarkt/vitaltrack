@@ -45,11 +45,13 @@ type httpTelegram struct {
 }
 
 func (h *httpTelegram) SendTelegramMessage(msg string) error {
-	_, err := http.PostForm(h.url, url.Values{"text": {msg}})
-	if err == nil {
-		*h.posted = append(*h.posted, msg)
+	resp, err := http.PostForm(h.url, url.Values{"text": {msg}})
+	if err != nil {
+		return err
 	}
-	return err
+	defer resp.Body.Close()
+	*h.posted = append(*h.posted, msg)
+	return nil
 }
 
 func (h *httpTelegram) PollForCommands(func() ([]domain.Medicine, []domain.StockEntry, error), func(int, int) (domain.MonthlyFinancialReport, error)) {
