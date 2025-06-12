@@ -19,11 +19,11 @@ type StdLogger struct{}
 // NewStdLogger creates a StdLogger.
 func NewStdLogger() *StdLogger { return &StdLogger{} }
 
-func (l *StdLogger) Info(ctx context.Context, msg string, kv ...any) {
+func (l *StdLogger) Info(_ context.Context, msg string, kv ...any) {
 	log.Println(format(msg, kv...))
 }
 
-func (l *StdLogger) Error(ctx context.Context, msg string, kv ...any) {
+func (l *StdLogger) Error(_ context.Context, msg string, kv ...any) {
 	log.Println(format(msg, kv...))
 }
 
