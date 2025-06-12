@@ -9,7 +9,6 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/nomenarkt/vitaltrack/backend/internal/background"
 	"github.com/nomenarkt/vitaltrack/backend/internal/di"
-	"github.com/nomenarkt/vitaltrack/backend/internal/domain"
 	"github.com/nomenarkt/vitaltrack/backend/internal/server"
 )
 
@@ -39,22 +38,7 @@ func main() {
 
 	// 🧭 Start Telegram bot polling for `/stock` commands if enabled
 	if os.Getenv("ENABLE_TELEGRAM_POLLING") == "true" {
-		go deps.Telegram.PollForCommands(
-			func() ([]domain.Medicine, []domain.StockEntry, error) {
-				meds, err := deps.Airtable.FetchMedicines()
-				if err != nil {
-					return nil, nil, err
-				}
-				entries, err := deps.Airtable.FetchStockEntries()
-				if err != nil {
-					return nil, nil, err
-				}
-				return meds, entries, nil
-			},
-			func(y, m int) (domain.MonthlyFinancialReport, error) {
-				return deps.FinancialSvc.GenerateFinancialReport(y, m)
-			},
-		)
+		di.StartTelegramPolling(deps)
 	}
 
 	// 🚀 Run server
