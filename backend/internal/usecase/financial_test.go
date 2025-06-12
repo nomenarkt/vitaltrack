@@ -2,6 +2,7 @@ package usecase_test
 
 import (
 	"reflect"
+	"sort"
 	"testing"
 	"time"
 
@@ -15,6 +16,17 @@ type mockFinanceRepo struct {
 
 func (m mockFinanceRepo) FetchFinancialEntries(year int, month time.Month) ([]domain.FinancialEntry, error) {
 	return m.entries, nil
+}
+
+func sortContributors(input []domain.ContributorAmount, order []string) []domain.ContributorAmount {
+	orderMap := map[string]int{}
+	for i, name := range order {
+		orderMap[name] = i
+	}
+	sort.SliceStable(input, func(i, j int) bool {
+		return orderMap[input[i].Name] < orderMap[input[j].Name]
+	})
+	return input
 }
 
 func TestGenerateFinancialReport(t *testing.T) {
@@ -183,6 +195,16 @@ func TestGenerateFinancialReport(t *testing.T) {
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
+
+			// Normalize order before comparison
+			order := []string{"Alice", "Bob", "Charlie"}
+			for i := range rep.Needs {
+				rep.Needs[i].Contributors = sortContributors(rep.Needs[i].Contributors, order)
+				tt.want.Needs[i].Contributors = sortContributors(tt.want.Needs[i].Contributors, order)
+			}
+			rep.Contributors = sortContributors(rep.Contributors, order)
+			tt.want.Contributors = sortContributors(tt.want.Contributors, order)
+
 			if !reflect.DeepEqual(rep.Needs, tt.want.Needs) {
 				t.Errorf("needs mismatch\nwant: %#v\n got: %#v", tt.want.Needs, rep.Needs)
 			}

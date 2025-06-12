@@ -3,7 +3,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: medicine-server
     ports:
       - "8787:8787"
     env_file:
@@ -15,7 +14,6 @@ services:
 
   airtable-mock:
     image: wiremock/wiremock:2.35.0
-    container_name: mock-airtable
     ports:
       - "8089:8080"
     volumes:
