@@ -26,16 +26,16 @@ func StartStockAlertTicker(deps di.Dependencies, interval time.Duration, nowFn f
 
 			meds, err := deps.Airtable.FetchMedicines()
 			if err != nil {
-				log.Println("❌ fetch medicines failed:", err)
-				log.Println("🔁 Alert ticker completed")
+				log.Printf("❌ fetch medicines failed: %v", err)
+				log.Printf("🔁 Alert ticker completed")
 				time.Sleep(interval)
 				continue
 			}
 
 			entries, err := deps.Airtable.FetchStockEntries()
 			if err != nil {
-				log.Println("❌ fetch stock entries failed:", err)
-				log.Println("🔁 Alert ticker completed")
+				log.Printf("❌ fetch stock entries failed: %v", err)
+				log.Printf("🔁 Alert ticker completed")
 				time.Sleep(interval)
 				continue
 			}
@@ -60,14 +60,14 @@ func StartStockAlertTicker(deps di.Dependencies, interval time.Duration, nowFn f
 						stock,
 					)
 					if err := deps.Telegram.SendTelegramMessage(msg); err != nil {
-						log.Println("❌ Telegram send failed:", err)
+						log.Printf("❌ Telegram send failed: %v", err)
 					} else {
 						log.Printf("📣 Alert sent for %s", m.Name)
 					}
 				}
 			}
 
-			log.Println("🔁 Alert ticker completed")
+			log.Printf("🔁 Alert ticker completed")
 
 			select {
 			case <-stopCh:
