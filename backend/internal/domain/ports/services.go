@@ -3,7 +3,7 @@ package ports
 import (
 	"time"
 
-	"github.com/nomenarkt/medicine-tracker/backend/internal/domain"
+	"github.com/nomenarkt/vitaltrack/backend/internal/domain"
 )
 
 type AirtableService interface {

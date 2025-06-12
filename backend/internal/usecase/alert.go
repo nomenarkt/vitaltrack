@@ -6,11 +6,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nomenarkt/medicine-tracker/backend/internal/domain"
-	"github.com/nomenarkt/medicine-tracker/backend/internal/domain/ports"
-	"github.com/nomenarkt/medicine-tracker/backend/internal/logic/forecast"
-	"github.com/nomenarkt/medicine-tracker/backend/internal/logic/stockcalc"
-	"github.com/nomenarkt/medicine-tracker/backend/internal/util"
+	"github.com/nomenarkt/vitaltrack/backend/internal/domain"
+	"github.com/nomenarkt/vitaltrack/backend/internal/domain/ports"
+	"github.com/nomenarkt/vitaltrack/backend/internal/logic/forecast"
+	"github.com/nomenarkt/vitaltrack/backend/internal/logic/stockcalc"
+	"github.com/nomenarkt/vitaltrack/backend/internal/util"
 )
 
 // StockChecker handles alerting when stock is near depletion.

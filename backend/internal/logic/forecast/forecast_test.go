@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nomenarkt/medicine-tracker/backend/internal/domain"
-	"github.com/nomenarkt/medicine-tracker/backend/internal/logic/forecast"
+	"github.com/nomenarkt/vitaltrack/backend/internal/domain"
+	"github.com/nomenarkt/vitaltrack/backend/internal/logic/forecast"
 )
 
 // ✅ Complete mock that satisfies StockDataPort

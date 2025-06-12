@@ -3,7 +3,7 @@ package util_test
 import (
 	"testing"
 
-	"github.com/nomenarkt/medicine-tracker/backend/internal/util"
+	"github.com/nomenarkt/vitaltrack/backend/internal/util"
 )
 
 func TestEscapeMarkdown_basicEscapes(t *testing.T) {

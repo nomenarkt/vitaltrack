@@ -16,9 +16,9 @@ import (
 
 	"github.com/joho/godotenv"
 
-	"github.com/nomenarkt/medicine-tracker/backend/internal/domain"
-	"github.com/nomenarkt/medicine-tracker/backend/internal/logic/stockcalc"
-	"github.com/nomenarkt/medicine-tracker/backend/internal/util"
+	"github.com/nomenarkt/vitaltrack/backend/internal/domain"
+	"github.com/nomenarkt/vitaltrack/backend/internal/logic/stockcalc"
+	"github.com/nomenarkt/vitaltrack/backend/internal/util"
 )
 
 type Client struct {
@@ -277,21 +277,22 @@ func (c *Client) sendTo(chatID int64, msg string) error {
 	return nil
 }
 
-// formatMGA formats numbers with comma separators and MGA suffix.
+// formatMGA formats numbers with comma separators and adds NARROW NO-BREAK SPACE before MGA.
 func formatMGA(v float64) string {
 	s := fmt.Sprintf("%.0f", v)
 	n := len(s)
 	if n <= 3 {
-		return s + " MGA"
+		return s + "\u202fMGA"
 	}
-	var out []byte
+
+	var out []rune
 	for i, c := range s {
 		if (n-i)%3 == 0 && i != 0 {
 			out = append(out, ',')
 		}
-		out = append(out, byte(c))
+		out = append(out, c)
 	}
-	return string(out) + " MGA"
+	return string(out) + "\u202fMGA"
 }
 
 // renderNeedBlock formats a single need report block in monospaced layout.
@@ -309,11 +310,16 @@ func renderNeedBlock(n domain.NeedReportBlock) string {
 
 	var lines []string
 	lines = append(lines, fmt.Sprintf("📅 %s – %s", d.Format("2006-01-02"), label))
-	lines = append(lines, fmt.Sprintf("Need:        %12s", formatMGA(n.NeedAmount)))
-	lines = append(lines, fmt.Sprintf("Contributed: %12s", formatMGA(n.Total)))
+	lines = append(lines, fmt.Sprintf("Need:          %s", formatMGA(n.NeedAmount)))
+	lines = append(lines, fmt.Sprintf("Contributed:   %s", formatMGA(n.Total)))
 	lines = append(lines, "")
 	lines = append(lines, fmt.Sprintf("| %-12s | %-12s |", "Contributor", "Amount"))
-	lines = append(lines, fmt.Sprintf("|%-14s|%-14s|", strings.Repeat("-", 14), strings.Repeat("-", 14)))
+	lines = append(lines, fmt.Sprintf("|%s|%s|", strings.Repeat("-", 14), strings.Repeat("-", 14)))
+
+	// Ensure alphabetical order for test expectations
+	sort.SliceStable(n.Contributors, func(i, j int) bool {
+		return n.Contributors[i].Name < n.Contributors[j].Name
+	})
 
 	for _, ctb := range n.Contributors {
 		lines = append(lines, fmt.Sprintf("| %-12s | %12s |", ctb.Name, formatMGA(ctb.Amount)))

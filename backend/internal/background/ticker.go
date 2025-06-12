@@ -6,9 +6,9 @@ import (
 	"math"
 	"time"
 
-	"github.com/nomenarkt/medicine-tracker/backend/internal/di"
-	"github.com/nomenarkt/medicine-tracker/backend/internal/logic/stockcalc"
-	"github.com/nomenarkt/medicine-tracker/backend/internal/util"
+	"github.com/nomenarkt/vitaltrack/backend/internal/di"
+	"github.com/nomenarkt/vitaltrack/backend/internal/logic/stockcalc"
+	"github.com/nomenarkt/vitaltrack/backend/internal/util"
 )
 
 func StartStockAlertTicker(deps di.Dependencies, interval time.Duration, nowFn func() time.Time) (stop func()) {

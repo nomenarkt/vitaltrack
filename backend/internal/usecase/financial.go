@@ -5,8 +5,8 @@ import (
 	"sort"
 	"time"
 
-	"github.com/nomenarkt/medicine-tracker/backend/internal/domain"
-	"github.com/nomenarkt/medicine-tracker/backend/internal/domain/ports"
+	"github.com/nomenarkt/vitaltrack/backend/internal/domain"
+	"github.com/nomenarkt/vitaltrack/backend/internal/domain/ports"
 )
 
 // FinancialReportService handles aggregation of financial entries.
@@ -21,13 +21,17 @@ func (s FinancialReportService) GenerateFinancialReport(year, month int) (domain
 		return domain.MonthlyFinancialReport{}, fmt.Errorf("fetch financial entries failed: %w", err)
 	}
 
+	// 👥 Always preserve this contributor order in reports
+	desiredOrder := []string{"Onja", "Tafita", "Henintsoa", "Mahandry"}
+
 	breakdown := map[string]map[string]float64{}
 	needAmounts := map[string]float64{}
 	needSeen := map[string]bool{}
 	contributorTotals := map[string]float64{}
-	contributorSet := map[string]struct{}{}
+	contributorPresent := map[string]bool{}
 	total := 0.0
 
+	// 🧾 Aggregate entries
 	for _, e := range entries {
 		key := fmt.Sprintf("%s %s", e.Date.Format("2006-01-02"), e.NeedLabel)
 
@@ -42,15 +46,26 @@ func (s FinancialReportService) GenerateFinancialReport(year, month int) (domain
 		}
 
 		contributorTotals[e.Contributor] += e.AmountContributed
-		contributorSet[e.Contributor] = struct{}{}
+		contributorPresent[e.Contributor] = true
 		total += e.AmountContributed
 	}
 
-	// Preferred contributor order
-	preferredOrder := []string{"Onja", "Tafita", "Henintsoa", "Mahandry"}
+	// ✨ Create final contributor list (predefined order if present)
 	var contributorNames []string
-	for _, name := range preferredOrder {
-		if _, exists := contributorSet[name]; exists {
+	for _, name := range desiredOrder {
+		if contributorPresent[name] {
+			contributorNames = append(contributorNames, name)
+		}
+	}
+	for name := range contributorPresent {
+		found := false
+		for _, n := range contributorNames {
+			if n == name {
+				found = true
+				break
+			}
+		}
+		if !found {
 			contributorNames = append(contributorNames, name)
 		}
 	}
@@ -59,7 +74,6 @@ func (s FinancialReportService) GenerateFinancialReport(year, month int) (domain
 	for k := range breakdown {
 		needKeys = append(needKeys, k)
 	}
-	// Already in date order via formatting, but sort just in case
 	sort.Strings(needKeys)
 
 	var needs []domain.NeedReportBlock

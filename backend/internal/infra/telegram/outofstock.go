@@ -3,8 +3,8 @@ package telegram
 import (
 	"time"
 
-	"github.com/nomenarkt/medicine-tracker/backend/internal/infra/airtable"
-	"github.com/nomenarkt/medicine-tracker/backend/internal/logic/forecast"
+	"github.com/nomenarkt/vitaltrack/backend/internal/infra/airtable"
+	"github.com/nomenarkt/vitaltrack/backend/internal/logic/forecast"
 )
 
 func HandleOutOfStockCommand() error {

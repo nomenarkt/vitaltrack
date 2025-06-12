@@ -1,10 +1,10 @@
 package di
 
 import (
-	"github.com/nomenarkt/medicine-tracker/backend/internal/domain/ports"
-	"github.com/nomenarkt/medicine-tracker/backend/internal/infra/airtable"
-	"github.com/nomenarkt/medicine-tracker/backend/internal/infra/telegram"
-	"github.com/nomenarkt/medicine-tracker/backend/internal/usecase"
+	"github.com/nomenarkt/vitaltrack/backend/internal/domain/ports"
+	"github.com/nomenarkt/vitaltrack/backend/internal/infra/airtable"
+	"github.com/nomenarkt/vitaltrack/backend/internal/infra/telegram"
+	"github.com/nomenarkt/vitaltrack/backend/internal/usecase"
 )
 
 type Dependencies struct {

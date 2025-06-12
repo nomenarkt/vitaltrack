@@ -187,7 +187,7 @@ func TestFetchFinancialEntries(t *testing.T) {
 	var query string
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		query = r.URL.RawQuery
-		fmt.Fprint(w, `{"records":[{"id":"rec1","fields":{"date":"2025-06-05","need_label":"Med","need_amount":5,"amount_contributed":10,"month_tag":"2025-06","contributor":"Alice","amount":5}},{"id":"rec2","fields":{"date":"2025-07-05","need_label":"Med","need_amount":5,"amount_contributed":10,"month_tag":"2025-07","contributor":"Bob","amount":5}}]}`)
+		fmt.Fprint(w, `{"records":[{"id":"rec1","fields":{"Date":"2025-06-05","NeedLabel":"Med","NeedAmount":5,"AmountContributed":10,"MonthTag":"2025-06","Contributor":"Alice"}},{"id":"rec2","fields":{"Date":"2025-07-05","NeedLabel":"Med","NeedAmount":5,"AmountContributed":10,"MonthTag":"2025-07","Contributor":"Bob"}}]}`)
 	}))
 	defer srv.Close()
 
@@ -212,7 +212,7 @@ func TestFetchFinancialEntries(t *testing.T) {
 
 func TestFetchFinancialEntries_fields(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, `{"records":[{"id":"rec1","fields":{"date":"2025-08-10","need_label":"Food","need_amount":15,"amount_contributed":5,"month_tag":"2025-08","contributor":"Bob","amount":5}}]}`)
+		fmt.Fprint(w, `{"records":[{"id":"rec1","fields":{"Date":"2025-08-10","NeedLabel":"Food","NeedAmount":15,"AmountContributed":5,"MonthTag":"2025-08","Contributor":"Bob"}}]}`)
 	}))
 	defer srv.Close()
 
@@ -239,7 +239,7 @@ func TestFetchFinancialEntries_fields(t *testing.T) {
 
 func TestFetchFinancialEntries_zeroContribution(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, `{"records":[{"id":"rec1","fields":{"date":"2025-09-20","need_label":"Med","need_amount":100,"amount_contributed":0,"month_tag":"2025-09","contributor":"Alice","amount":0}}]}`)
+		fmt.Fprint(w, `{"records":[{"id":"rec1","fields":{"Date":"2025-09-20","NeedLabel":"Med","NeedAmount":100,"AmountContributed":0,"MonthTag":"2025-09","Contributor":"Alice"}}]}`)
 	}))
 	defer srv.Close()
 

@@ -1,4 +1,4 @@
-module github.com/nomenarkt/medicine-tracker/backend
+module github.com/nomenarkt/vitaltrack/backend
 
 go 1.24.1
 

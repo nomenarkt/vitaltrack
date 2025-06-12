@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nomenarkt/medicine-tracker/backend/internal/domain"
-	"github.com/nomenarkt/medicine-tracker/backend/internal/usecase"
+	"github.com/nomenarkt/vitaltrack/backend/internal/domain"
+	"github.com/nomenarkt/vitaltrack/backend/internal/usecase"
 )
 
 type mockFinanceRepo struct {

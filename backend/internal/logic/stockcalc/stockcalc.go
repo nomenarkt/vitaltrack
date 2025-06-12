@@ -4,7 +4,7 @@ import (
 	"math"
 	"time"
 
-	"github.com/nomenarkt/medicine-tracker/backend/internal/domain"
+	"github.com/nomenarkt/vitaltrack/backend/internal/domain"
 )
 
 // CurrentStockAt computes current pill stock based on:

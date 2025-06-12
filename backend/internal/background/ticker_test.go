@@ -11,9 +11,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nomenarkt/medicine-tracker/backend/internal/background"
-	"github.com/nomenarkt/medicine-tracker/backend/internal/di"
-	"github.com/nomenarkt/medicine-tracker/backend/internal/domain"
+	"github.com/nomenarkt/vitaltrack/backend/internal/background"
+	"github.com/nomenarkt/vitaltrack/backend/internal/di"
+	"github.com/nomenarkt/vitaltrack/backend/internal/domain"
 )
 
 type mockAirtable struct {

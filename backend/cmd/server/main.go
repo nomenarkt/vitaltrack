@@ -7,10 +7,10 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
-	"github.com/nomenarkt/medicine-tracker/backend/internal/background"
-	"github.com/nomenarkt/medicine-tracker/backend/internal/di"
-	"github.com/nomenarkt/medicine-tracker/backend/internal/domain"
-	"github.com/nomenarkt/medicine-tracker/backend/internal/server"
+	"github.com/nomenarkt/vitaltrack/backend/internal/background"
+	"github.com/nomenarkt/vitaltrack/backend/internal/di"
+	"github.com/nomenarkt/vitaltrack/backend/internal/domain"
+	"github.com/nomenarkt/vitaltrack/backend/internal/server"
 )
 
 func main() {

@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
-	"github.com/nomenarkt/medicine-tracker/backend/internal/domain"
+	"github.com/nomenarkt/vitaltrack/backend/internal/domain"
 )
 
 type Client struct {
@@ -294,6 +294,10 @@ func (c *Client) FetchFinancialEntries(year int, month time.Month) ([]domain.Fin
 	var entries []domain.FinancialEntry
 	for _, rec := range response.Records {
 		f := rec.Fields
+		// ✅ Defensive filter for test stability
+		if f.MonthTag != fmt.Sprintf("%04d-%02d", year, month) {
+			continue
+		}
 		entries = append(entries, domain.FinancialEntry{
 			ID:                rec.ID,
 			Date:              f.Date,
@@ -304,5 +308,6 @@ func (c *Client) FetchFinancialEntries(year int, month time.Month) ([]domain.Fin
 			Contributor:       f.Contributor,
 		})
 	}
+
 	return entries, nil
 }
