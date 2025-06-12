@@ -65,11 +65,11 @@ func TestStartFromEnv(t *testing.T) {
 			pollingCalled := false
 			origTicker := di.StartTickerFunc
 			origPolling := di.PollingFunc
-			di.StartTickerFunc = func(ctx context.Context, deps di.Dependencies, d time.Duration, nowFn func() time.Time) func() {
+			di.StartTickerFunc = func(_ context.Context, _ di.Dependencies, _ time.Duration, _ func() time.Time) func() {
 				tickerCalled = true
 				return func() {}
 			}
-			di.PollingFunc = func(ctx context.Context, deps di.Dependencies) { pollingCalled = true }
+			di.PollingFunc = func(_ context.Context, _ di.Dependencies) { pollingCalled = true }
 			defer func() {
 				di.StartTickerFunc = origTicker
 				di.PollingFunc = origPolling
@@ -152,11 +152,11 @@ func TestNewApp(t *testing.T) {
 			pollingCalled := false
 			origTicker := di.StartTickerFunc
 			origPolling := di.PollingFunc
-			di.StartTickerFunc = func(ctx context.Context, deps di.Dependencies, d time.Duration, nowFn func() time.Time) func() {
+			di.StartTickerFunc = func(_ context.Context, _ di.Dependencies, _ time.Duration, _ func() time.Time) func() {
 				tickerCalled = true
 				return func() {}
 			}
-			di.PollingFunc = func(ctx context.Context, deps di.Dependencies) { pollingCalled = true }
+			di.PollingFunc = func(_ context.Context, _ di.Dependencies) { pollingCalled = true }
 			defer func() {
 				di.StartTickerFunc = origTicker
 				di.PollingFunc = origPolling
