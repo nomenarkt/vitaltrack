@@ -20,7 +20,7 @@ func main() {
 	deps := di.Init()
 
 	// ✅ Setup all HTTP routes with DI
-	server.SetupRoutes(app, deps.StockChecker, deps.ForecastSvc, deps.Airtable, deps.Telegram)
+	server.SetupRoutes(app, deps.StockChecker, deps.ForecastSvc, deps.MedicineSvc, deps.Airtable, deps.Telegram)
 
 	// 🔄 Start background stock check if enabled
 	tickerInterval := 24 * time.Hour

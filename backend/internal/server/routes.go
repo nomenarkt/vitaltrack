@@ -1,15 +1,14 @@
 package server
 
 import (
+	"errors"
 	"fmt"
-	"math"
 	"os"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/nomenarkt/vitaltrack/backend/internal/domain"
 	"github.com/nomenarkt/vitaltrack/backend/internal/domain/ports"
-	"github.com/nomenarkt/vitaltrack/backend/internal/logic/stockcalc"
 	"github.com/nomenarkt/vitaltrack/backend/internal/usecase"
 )
 
@@ -17,6 +16,7 @@ func SetupRoutes(
 	app *fiber.App,
 	checker *usecase.StockChecker,
 	forecastSvc usecase.OutOfStockService,
+	medicineSvc usecase.MedicineService,
 	dataPort ports.StockDataPort,
 	telegramClient ports.TelegramService,
 ) {
@@ -51,43 +51,28 @@ func SetupRoutes(
 		id := c.Params("id")
 		now := time.Now().UTC()
 
-		meds, err := dataPort.FetchMedicines()
+		info, err := medicineSvc.GetStockInfo(id, now)
 		if err != nil {
-			return c.Status(500).JSON(fiber.Map{"error": err.Error()})
-		}
-		entries, err := dataPort.FetchStockEntries()
-		if err != nil {
-			return c.Status(500).JSON(fiber.Map{"error": err.Error()})
-		}
-
-		var m *domain.Medicine
-		for _, med := range meds {
-			if med.ID == id {
-				tmp := med
-				m = &tmp
-				break
+			if errors.Is(err, usecase.ErrMedicineNotFound) {
+				return c.Status(404).JSON(fiber.Map{"error": err.Error()})
 			}
-		}
-		if m == nil {
-			return c.Status(404).JSON(fiber.Map{"error": "medicine not found"})
+			return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 		}
 
-		stock := stockcalc.CurrentStockAt(*m, entries, now)
-
-		if stock < stockThreshold {
+		if info.CurrentStock < stockThreshold {
 			alert := fmt.Sprintf("⚠️ Stock alert for *%s*:\nOnly %.2f pills left!\nRefill before %s.",
-				m.Name,
-				stock,
-				stockcalc.OutOfStockDateAt(*m, stock, now).Format("Jan 2, 2006"),
+				id,
+				info.CurrentStock,
+				info.OutOfStockDate.Format("Jan 2, 2006"),
 			)
 			_ = telegramClient.SendTelegramMessage(alert)
 		}
 
 		return c.JSON(fiber.Map{
-			"initial_stock":     m.InitialStock,
-			"consumed_stock":    math.Max(m.InitialStock-stock, 0),
-			"current_stock":     stock,
-			"out_of_stock_date": stockcalc.OutOfStockDateAt(*m, stock, now).Format("2006-01-02"),
+			"initial_stock":     info.InitialStock,
+			"consumed_stock":    info.ConsumedStock,
+			"current_stock":     info.CurrentStock,
+			"out_of_stock_date": info.OutOfStockDate.Format("2006-01-02"),
 		})
 	})
 

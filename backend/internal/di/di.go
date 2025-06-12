@@ -13,6 +13,7 @@ type Dependencies struct {
 	StockChecker *usecase.StockChecker
 	ForecastSvc  usecase.OutOfStockService
 	FinancialSvc usecase.FinancialReportService
+	MedicineSvc  usecase.MedicineService
 }
 
 func Init() Dependencies {
@@ -30,5 +31,6 @@ func Init() Dependencies {
 			Airtable: at,
 		},
 		FinancialSvc: usecase.FinancialReportService{Repo: at},
+		MedicineSvc:  usecase.MedicineService{Repo: at},
 	}
 }
