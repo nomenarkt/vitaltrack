@@ -22,7 +22,7 @@ type StockChecker struct {
 // CheckAndAlertLowStock scans medicines and alerts if 10 days from out-of-stock.
 func (s *StockChecker) CheckAndAlertLowStock() error {
 	now := time.Now().UTC()
-	log.Println("📡 Starting CheckAndAlertLowStock...")
+	log.Printf("📡 Starting CheckAndAlertLowStock...")
 
 	meds, err := s.Airtable.FetchMedicines()
 	if err != nil {
@@ -76,7 +76,7 @@ func (s *StockChecker) CheckAndAlertLowStock() error {
 			if err := s.Telegram.SendTelegramMessage(alert); err != nil {
 				log.Printf("❌ Telegram send failed: %v", err)
 			} else {
-				log.Println("✅ Telegram message sent")
+				log.Printf("✅ Telegram message sent")
 			}
 
 			log.Printf("🧪 Calling UpdateMedicineLastAlertedDate for recordID=%s", m.ID)
