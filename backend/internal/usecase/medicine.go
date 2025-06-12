@@ -16,6 +16,7 @@ type MedicineService struct {
 	Repo ports.StockDataPort
 }
 
+// ErrMedicineNotFound is returned when a medicine ID does not exist.
 var ErrMedicineNotFound = errors.New("medicine not found")
 
 // StockInfo summarizes current stock information for a medicine.

@@ -22,12 +22,14 @@ import (
 	"github.com/nomenarkt/vitaltrack/backend/internal/util"
 )
 
+// Client interacts with the Telegram Bot API.
 type Client struct {
 	Token   string
 	ChatID  string
 	baseURL string
 }
 
+// NewClient constructs a Client using environment variables for configuration.
 func NewClient() *Client {
 	_ = godotenv.Load()
 
@@ -48,6 +50,7 @@ func NewClient() *Client {
 	}
 }
 
+// SendTelegramMessage posts a Markdown-formatted message to the configured chat.
 func (c *Client) SendTelegramMessage(msg string) error {
 	log.Printf("📨 Sending Telegram: %s", msg)
 
@@ -82,6 +85,7 @@ func (c *Client) SendTelegramMessage(msg string) error {
 	return nil
 }
 
+// Update represents a single Telegram bot update.
 type Update struct {
 	UpdateID int `json:"update_id"`
 	Message  struct {
@@ -92,11 +96,13 @@ type Update struct {
 	} `json:"message"`
 }
 
+// GetUpdatesResponse is the Telegram API response for updates polling.
 type GetUpdatesResponse struct {
 	OK     bool     `json:"ok"`
 	Result []Update `json:"result"`
 }
 
+// PollForCommands continuously polls Telegram for bot commands and handles them.
 func (c *Client) PollForCommands(
 	fetchData func() ([]domain.Medicine, []domain.StockEntry, error),
 	reportFn func(year, month int) (domain.MonthlyFinancialReport, error),

@@ -13,6 +13,7 @@ import (
 	"github.com/nomenarkt/vitaltrack/backend/internal/usecase"
 )
 
+// SetupRoutes registers all HTTP endpoints with the provided Fiber app.
 func SetupRoutes(
 	app *fiber.App,
 	checker *usecase.StockChecker,
