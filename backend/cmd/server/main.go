@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"os"
 	"time"
@@ -33,12 +34,12 @@ func main() {
 		}
 	}
 	if os.Getenv("ENABLE_ALERT_TICKER") == "true" {
-		background.StartStockAlertTicker(deps, tickerInterval, time.Now)
+		background.StartStockAlertTicker(context.Background(), deps, tickerInterval, time.Now)
 	}
 
 	// 🧭 Start Telegram bot polling for `/stock` commands if enabled
 	if os.Getenv("ENABLE_TELEGRAM_POLLING") == "true" {
-		di.StartTelegramPolling(deps)
+		di.StartTelegramPolling(context.Background(), deps)
 	}
 
 	// 🚀 Run server

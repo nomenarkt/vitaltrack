@@ -1,12 +1,14 @@
 package di_test
 
 import (
+	"context"
 	"os"
 	"testing"
 	"time"
 
 	"github.com/nomenarkt/vitaltrack/backend/internal/di"
 	"github.com/nomenarkt/vitaltrack/backend/internal/domain"
+	"github.com/nomenarkt/vitaltrack/backend/internal/logger"
 )
 
 type envMockAirtable struct{}
@@ -59,18 +61,18 @@ func TestStartFromEnv(t *testing.T) {
 			pollingCalled := false
 			origTicker := di.StartTickerFunc
 			origPolling := di.PollingFunc
-			di.StartTickerFunc = func(deps di.Dependencies, d time.Duration, nowFn func() time.Time) func() {
+			di.StartTickerFunc = func(ctx context.Context, deps di.Dependencies, d time.Duration, nowFn func() time.Time) func() {
 				tickerCalled = true
 				return func() {}
 			}
-			di.PollingFunc = func(deps di.Dependencies) { pollingCalled = true }
+			di.PollingFunc = func(ctx context.Context, deps di.Dependencies) { pollingCalled = true }
 			defer func() {
 				di.StartTickerFunc = origTicker
 				di.PollingFunc = origPolling
 			}()
 
-			deps := di.Dependencies{Airtable: &envMockAirtable{}, Telegram: &envMockTelegram{}}
-			di.StartFromEnv(deps)
+			deps := di.Dependencies{Airtable: &envMockAirtable{}, Telegram: &envMockTelegram{}, Logger: logger.NewStdLogger()}
+			di.StartFromEnv(context.Background(), deps)
 
 			if tt.expectTicker != tickerCalled {
 				t.Errorf("ticker call = %v, want %v", tickerCalled, tt.expectTicker)

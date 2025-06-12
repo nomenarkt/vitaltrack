@@ -1,8 +1,8 @@
 package background
 
 import (
+	"context"
 	"fmt"
-	"log"
 	"math"
 	"time"
 
@@ -11,7 +11,8 @@ import (
 	"github.com/nomenarkt/vitaltrack/backend/internal/util"
 )
 
-func StartStockAlertTicker(deps di.Dependencies, interval time.Duration, nowFn func() time.Time) (stop func()) {
+func StartStockAlertTicker(ctx context.Context, deps di.Dependencies, interval time.Duration, nowFn func() time.Time) (stop func()) {
+	deps.Logger.Info(ctx, "alert ticker started", "interval", interval)
 	stopCh := make(chan struct{})
 	go func() {
 		ticker := time.NewTicker(interval)
@@ -26,16 +27,16 @@ func StartStockAlertTicker(deps di.Dependencies, interval time.Duration, nowFn f
 
 			meds, err := deps.Airtable.FetchMedicines()
 			if err != nil {
-				log.Printf("❌ fetch medicines failed: %v", err)
-				log.Printf("🔁 Alert ticker completed")
+				deps.Logger.Error(ctx, "fetch medicines failed", "error", err)
+				deps.Logger.Info(ctx, "alert ticker completed")
 				time.Sleep(interval)
 				continue
 			}
 
 			entries, err := deps.Airtable.FetchStockEntries()
 			if err != nil {
-				log.Printf("❌ fetch stock entries failed: %v", err)
-				log.Printf("🔁 Alert ticker completed")
+				deps.Logger.Error(ctx, "fetch stock entries failed", "error", err)
+				deps.Logger.Info(ctx, "alert ticker completed")
 				time.Sleep(interval)
 				continue
 			}
@@ -60,14 +61,14 @@ func StartStockAlertTicker(deps di.Dependencies, interval time.Duration, nowFn f
 						stock,
 					)
 					if err := deps.Telegram.SendTelegramMessage(msg); err != nil {
-						log.Printf("❌ Telegram send failed: %v", err)
+						deps.Logger.Error(ctx, "telegram send failed", "medicine_id", m.ID, "error", err)
 					} else {
-						log.Printf("📣 Alert sent for %s", m.Name)
+						deps.Logger.Info(ctx, "alert sent", "medicine_id", m.ID)
 					}
 				}
 			}
 
-			log.Printf("🔁 Alert ticker completed")
+			deps.Logger.Info(ctx, "alert ticker completed")
 
 			select {
 			case <-stopCh:

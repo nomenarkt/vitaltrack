@@ -4,12 +4,14 @@ import (
 	"github.com/nomenarkt/vitaltrack/backend/internal/domain/ports"
 	"github.com/nomenarkt/vitaltrack/backend/internal/infra/airtable"
 	"github.com/nomenarkt/vitaltrack/backend/internal/infra/telegram"
+	"github.com/nomenarkt/vitaltrack/backend/internal/logger"
 	"github.com/nomenarkt/vitaltrack/backend/internal/usecase"
 )
 
 type Dependencies struct {
 	Airtable     ports.StockDataPort // satisfies AirtableService + StockDataPort
 	Telegram     ports.TelegramService
+	Logger       logger.Logger
 	StockChecker *usecase.StockChecker
 	ForecastSvc  usecase.OutOfStockService
 	FinancialSvc usecase.FinancialReportService
@@ -19,10 +21,12 @@ type Dependencies struct {
 func Init() Dependencies {
 	at := airtable.NewClient()
 	tg := telegram.NewClient()
+	lg := logger.NewStdLogger()
 
 	return Dependencies{
 		Airtable: at,
 		Telegram: tg,
+		Logger:   lg,
 		StockChecker: &usecase.StockChecker{
 			Airtable: at,
 			Telegram: tg,
