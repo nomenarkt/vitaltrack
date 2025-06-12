@@ -97,9 +97,9 @@ func (s *StockChecker) CheckAndAlertLowStock() error {
 
 	for medID, todayEntries := range refillsToday {
 		var med *domain.Medicine
-		for _, m := range meds {
+		for i, m := range meds {
 			if m.ID == medID {
-				med = &m
+				med = &meds[i]
 				break
 			}
 		}
