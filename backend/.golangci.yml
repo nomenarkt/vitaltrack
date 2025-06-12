@@ -1,0 +1,79 @@
+run:
+  timeout: 2m
+  tests: true
+
+issues:
+  exclude-dirs:
+    - vendor
+    - third_party
+    - migrations
+
+  exclude-rules:
+    - linters:
+        - errcheck
+      text: "defer .*Close.*"
+
+    - linters:
+        - revive
+      text: "should have comment or be unexported"
+
+    - linters:
+        - unused
+      text: "parameter '.*' seems to be unused"
+
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+output:
+  formats:
+    - format: colored-line-number
+  print-issued-lines: true
+
+linters:
+  enable:
+    - govet
+    - errcheck
+    - staticcheck
+    - gofmt
+    - goimports
+    - revive
+    - gocritic
+    - ineffassign
+    - unused
+    - typecheck
+    - depguard
+    - nakedret
+    - bodyclose
+    - forbidigo
+    - copyloopvar  # Go 1.22+ safe loop var copy
+
+linters-settings:
+  goimports:
+    local-prefixes: github.com/nomenarkt/vitaltrack
+
+  depguard:
+    list-type: allowlist
+    packages:
+      - context
+      - errors
+      - fmt
+      - time
+      - strings
+      - net/http
+      - github.com/gofiber/fiber/v2
+      - github.com/joho/godotenv
+      - github.com/nomenarkt/vitaltrack/backend/internal/domain
+      - github.com/nomenarkt/vitaltrack/backend/internal/domain/ports
+      - github.com/nomenarkt/vitaltrack/backend/internal/infra/airtable
+      - github.com/nomenarkt/vitaltrack/backend/internal/infra/telegram
+      - github.com/nomenarkt/vitaltrack/backend/internal/usecase
+      - github.com/nomenarkt/vitaltrack/backend/internal/logic/forecast
+      - github.com/nomenarkt/vitaltrack/backend/internal/logic/stockcalc
+      - github.com/nomenarkt/vitaltrack/backend/internal/di
+
+  forbidigo:
+    forbid:
+      - name: "fmt.Println"
+        message: "Use structured logger instead (zap, slog, etc.)"
+      - name: "log.Println"
+        message: "Avoid standard log, use centralized logger"

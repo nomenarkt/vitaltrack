@@ -316,11 +316,7 @@ func renderNeedBlock(n domain.NeedReportBlock) string {
 	lines = append(lines, fmt.Sprintf("| %-12s | %-12s |", "Contributor", "Amount"))
 	lines = append(lines, fmt.Sprintf("|%s|%s|", strings.Repeat("-", 14), strings.Repeat("-", 14)))
 
-	// Ensure alphabetical order for test expectations
-	sort.SliceStable(n.Contributors, func(i, j int) bool {
-		return n.Contributors[i].Name < n.Contributors[j].Name
-	})
-
+	// ❌ DO NOT re-sort here. Keep usecase-defined order.
 	for _, ctb := range n.Contributors {
 		lines = append(lines, fmt.Sprintf("| %-12s | %12s |", ctb.Name, formatMGA(ctb.Amount)))
 	}

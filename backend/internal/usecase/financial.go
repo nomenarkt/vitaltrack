@@ -21,8 +21,12 @@ func (s FinancialReportService) GenerateFinancialReport(year, month int) (domain
 		return domain.MonthlyFinancialReport{}, fmt.Errorf("fetch financial entries failed: %w", err)
 	}
 
-	// 👥 Always preserve this contributor order in reports
+	// 👥 Define contributor display order
 	desiredOrder := []string{"Onja", "Tafita", "Henintsoa", "Mahandry"}
+	orderIndex := map[string]int{}
+	for i, name := range desiredOrder {
+		orderIndex[name] = i
+	}
 
 	breakdown := map[string]map[string]float64{}
 	needAmounts := map[string]float64{}
@@ -31,7 +35,6 @@ func (s FinancialReportService) GenerateFinancialReport(year, month int) (domain
 	contributorPresent := map[string]bool{}
 	total := 0.0
 
-	// 🧾 Aggregate entries
 	for _, e := range entries {
 		key := fmt.Sprintf("%s %s", e.Date.Format("2006-01-02"), e.NeedLabel)
 
@@ -50,7 +53,6 @@ func (s FinancialReportService) GenerateFinancialReport(year, month int) (domain
 		total += e.AmountContributed
 	}
 
-	// ✨ Create final contributor list (predefined order if present)
 	var contributorNames []string
 	for _, name := range desiredOrder {
 		if contributorPresent[name] {
@@ -58,14 +60,8 @@ func (s FinancialReportService) GenerateFinancialReport(year, month int) (domain
 		}
 	}
 	for name := range contributorPresent {
-		found := false
-		for _, n := range contributorNames {
-			if n == name {
-				found = true
-				break
-			}
-		}
-		if !found {
+		if _, exists := orderIndex[name]; !exists {
+			orderIndex[name] = len(orderIndex)
 			contributorNames = append(contributorNames, name)
 		}
 	}
@@ -86,6 +82,10 @@ func (s FinancialReportService) GenerateFinancialReport(year, month int) (domain
 			contribs = append(contribs, domain.ContributorAmount{Name: name, Amount: amt})
 			needTotal += amt
 		}
+		// ⬇️ Enforce consistent contributor sort
+		sort.SliceStable(contribs, func(i, j int) bool {
+			return orderIndex[contribs[i].Name] < orderIndex[contribs[j].Name]
+		})
 		needs = append(needs, domain.NeedReportBlock{
 			Need:         k,
 			NeedAmount:   needAmounts[k],
@@ -98,6 +98,9 @@ func (s FinancialReportService) GenerateFinancialReport(year, month int) (domain
 	for _, name := range contributorNames {
 		contributors = append(contributors, domain.ContributorAmount{Name: name, Amount: contributorTotals[name]})
 	}
+	sort.SliceStable(contributors, func(i, j int) bool {
+		return orderIndex[contributors[i].Name] < orderIndex[contributors[j].Name]
+	})
 
 	return domain.MonthlyFinancialReport{
 		Year:         year,

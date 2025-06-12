@@ -108,67 +108,27 @@ docker run -p 8787:8787 --env-file .env vitaltrack
 
 Or use Render with Dockerfile auto-deploy.
 
-🧱 Codebase Structure
-├── vitaltrack/
-│   ├── vitaltrack/
-│   │   ├── LICENSE
-│   │   ├── README.md
-│   │   ├── backend-contributing.md
-│   │   ├── frontend-contributing.md
-│   │   ├── vitaltrack.code-workspace
-│   │   ├── .gitignore
-│   │   ├── Dockerfile
-│   │   ├── docker-compose.yml
-│   │   ├── .dockerignore
-│   │   ├── backend/
-│   │   │   ├── .env.template
-│   │   │   ├── .env
-│   │   │   ├── go.mod
-│   │   │   ├── go.sum
-│   │   │   ├── Makefile
-│   │   │   ├── internal/
-│   │   │   │   ├── domain/
-│   │   │   │   │   ├── flexible_date.go
-│   │   │   │   │   ├── entry.go
-│   │   │   │   │   ├── models.go
-│   │   │   │   │   ├── financial.go
-│   │   │   │   │   ├── ports/
-│   │   │   │   │   │   ├── services.go
-│   │   │   │   ├── usecase/
-│   │   │   │   │   ├── alert.go
-│   │   │   │   │   ├── alert_test.go
-│   │   │   │   │   ├── financial.go
-│   │   │   │   │   ├── financial_test.go
-│   │   │   │   ├── infra/
-│   │   │   │   │   ├── airtable/
-│   │   │   │   │   │   ├── client.go
-│   │   │   │   │   │   ├── client_test.go
-│   │   │   │   │   ├── telegram/
-│   │   │   │   │   │   ├── client.go
-│   │   │   │   │   │   ├── client_test.go
-│   │   │   │   ├── logic/
-│   │   │   │   │   ├── forecast/
-│   │   │   │   │   │   ├── forecast.go
-│   │   │   │   │   │   ├── forecast_test.go
-│   │   │   │   │   ├── stockcalc/
-│   │   │   │   │   │   ├── stock.go
-│   │   │   │   │   │   ├── stock_test.go
-│   │   │   │   ├── util/
-│   │   │   │   │   ├── escape.go
-│   │   │   │   │   ├── escape_test.go
-│   │   │   │   ├── delivery/
-│   │   │   │   │   ├── telegram/
-│   │   │   │   │   │   ├── handler.go
-│   │   │   │   │   │   ├── handler_test.go
-│   │   │   │   ├── background/
-│   │   │   │   │   ├── ticker.go
-│   │   │   │   │   ├── ticker_test.go
-│   │   │   │   ├── di/
-│   │   │   │   │   ├── wire.go
-│   │   │   │   │   ├── wire_gen.go
-│   │   │   │   ├── server/
-│   │   │   │   │   ├── server.go
-│   │   │   │   │   ├── main.go
+🧱 Project Layout
+vitaltrack/
+├── backend/
+│   ├── cmd/server/               ← App entrypoint
+│   ├── internal/
+│   │   ├── domain/              ← DDD domain models: `entry.go`, `financial.go`, etc.
+│   │   ├── usecase/             ← Business logic: `alert.go`, `financial.go`, etc.
+│   │   ├── infra/               ← Integration: Airtable, Telegram
+│   │   ├── logic/               ← Forecasting and stock calculations
+│   │   ├── background/          ← Scheduled tasks (ticker)
+│   │   ├── server/              ← Routing (Fiber?)
+│   │   ├── util/                ← Helpers like markdown escaping
+│   │   └── di/                  ← Dependency injection
+│   ├── go.mod / go.sum         ← Correct Go project structure
+│   ├── .env / .env.template    ← Environment configuration
+│   └── Makefile, Dockerfile    ← Build + run tooling
+├── docker-compose.yml          ← Local dev orchestration
+├── vitaltrack.code-workspace   ← VSCode multi-root workspace config
+├── README.md                   ← Fully updated, matches renamed identity
+└── backend-contributing.md     ← Dev standards (important for CI/code lint/test flow)
+
 
 🔐 CI/CD & Linting
 CI runs on GitHub Actions:
