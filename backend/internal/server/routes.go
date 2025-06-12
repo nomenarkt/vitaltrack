@@ -1,3 +1,4 @@
+// Package server provides HTTP route bindings for all service endpoints.
 package server
 
 import (

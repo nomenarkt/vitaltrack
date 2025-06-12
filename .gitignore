@@ -23,4 +23,4 @@ Thumbs.db
 # Ignore backend secrets
 /backend/.env
 
-docs/
+docs/backend/tmp/
