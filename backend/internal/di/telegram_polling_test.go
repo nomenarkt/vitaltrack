@@ -1,11 +1,13 @@
 package di_test
 
 import (
+	"context"
 	"testing"
 	"time"
 
 	"github.com/nomenarkt/vitaltrack/backend/internal/di"
 	"github.com/nomenarkt/vitaltrack/backend/internal/domain"
+	"github.com/nomenarkt/vitaltrack/backend/internal/logger"
 	"github.com/nomenarkt/vitaltrack/backend/internal/usecase"
 )
 
@@ -53,9 +55,10 @@ func TestStartTelegramPolling(t *testing.T) {
 		Airtable:     at,
 		Telegram:     tg,
 		FinancialSvc: usecase.FinancialReportService{Repo: repo},
+		Logger:       logger.NewStdLogger(),
 	}
 
-	di.StartTelegramPolling(deps)
+	di.StartTelegramPolling(context.Background(), deps)
 
 	select {
 	case <-tg.done:

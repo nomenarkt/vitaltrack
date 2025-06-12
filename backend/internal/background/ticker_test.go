@@ -1,15 +1,16 @@
 package background_test
 
 import (
-	"bytes"
+	"context"
+	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"strings"
 	"testing"
 	"time"
+
+	"strings"
 
 	"github.com/nomenarkt/vitaltrack/backend/internal/background"
 	"github.com/nomenarkt/vitaltrack/backend/internal/di"
@@ -54,6 +55,34 @@ func (h *httpTelegram) SendTelegramMessage(msg string) error {
 func (h *httpTelegram) PollForCommands(func() ([]domain.Medicine, []domain.StockEntry, error), func(int, int) (domain.MonthlyFinancialReport, error)) {
 }
 
+type captureLogger struct{ entries []string }
+
+func (c *captureLogger) Info(_ context.Context, msg string, kv ...any) {
+	c.entries = append(c.entries, logFmt(msg, kv...))
+}
+
+func (c *captureLogger) Error(_ context.Context, msg string, kv ...any) {
+	c.entries = append(c.entries, logFmt(msg, kv...))
+}
+
+func (c *captureLogger) String() string { return strings.Join(c.entries, "\n") }
+
+func logFmt(msg string, kv ...any) string {
+	if len(kv) == 0 {
+		return msg
+	}
+	parts := make([]string, 0, len(kv)/2)
+	for i := 0; i < len(kv); i += 2 {
+		k := fmt.Sprint(kv[i])
+		v := ""
+		if i+1 < len(kv) {
+			v = fmt.Sprint(kv[i+1])
+		}
+		parts = append(parts, k+"="+v)
+	}
+	return msg + " " + strings.Join(parts, " ")
+}
+
 func TestStartStockAlertTicker(t *testing.T) {
 	now := time.Date(2025, 6, 4, 0, 0, 0, 0, time.UTC)
 
@@ -78,14 +107,10 @@ func TestStartStockAlertTicker(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			at := &mockAirtable{meds: []domain.Medicine{tt.med}, entries: []domain.StockEntry{}}
 			tg := &mockTelegram{}
-			deps := di.Dependencies{Airtable: at, Telegram: tg}
+			lg := &captureLogger{}
+			deps := di.Dependencies{Airtable: at, Telegram: tg, Logger: lg}
 
-			var buf bytes.Buffer
-			orig := log.Writer()
-			log.SetOutput(&buf)
-			defer log.SetOutput(orig)
-
-			stop := background.StartStockAlertTicker(deps, 10*time.Millisecond, func() time.Time { return now })
+			stop := background.StartStockAlertTicker(context.Background(), deps, 10*time.Millisecond, func() time.Time { return now })
 			time.Sleep(20 * time.Millisecond)
 			stop()
 
@@ -95,8 +120,7 @@ func TestStartStockAlertTicker(t *testing.T) {
 			if !tt.expect && len(tg.msgs) > 0 {
 				t.Fatalf("unexpected alert sent: %v", tg.msgs)
 			}
-
-			if !strings.Contains(buf.String(), "🔁 Alert ticker completed") {
+			if !strings.Contains(lg.String(), "alert ticker completed") {
 				t.Errorf("expected completion log")
 			}
 		})
@@ -134,14 +158,10 @@ func TestStartStockAlertTicker_HTTP(t *testing.T) {
 
 			at := &mockAirtable{meds: []domain.Medicine{tt.med}, entries: []domain.StockEntry{}}
 			tg := &httpTelegram{url: srv.URL, posted: &posted}
-			deps := di.Dependencies{Airtable: at, Telegram: tg}
+			lg := &captureLogger{}
+			deps := di.Dependencies{Airtable: at, Telegram: tg, Logger: lg}
 
-			var buf bytes.Buffer
-			orig := log.Writer()
-			log.SetOutput(&buf)
-			defer log.SetOutput(orig)
-
-			stop := background.StartStockAlertTicker(deps, 10*time.Millisecond, func() time.Time { return now })
+			stop := background.StartStockAlertTicker(context.Background(), deps, 10*time.Millisecond, func() time.Time { return now })
 			time.Sleep(20 * time.Millisecond)
 			stop()
 
@@ -151,7 +171,7 @@ func TestStartStockAlertTicker_HTTP(t *testing.T) {
 			if !tt.expect && len(posted) > 0 {
 				t.Fatalf("unexpected alert sent: %v", posted)
 			}
-			if !strings.Contains(buf.String(), "Alert ticker completed") {
+			if !strings.Contains(lg.String(), "alert ticker completed") {
 				t.Errorf("expected completion log")
 			}
 		})
