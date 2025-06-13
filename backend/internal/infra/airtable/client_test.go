@@ -24,9 +24,15 @@ func TestUpdateMedicineLastAlertedDate(t *testing.T) {
 	var body []byte
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		path = r.URL.Path
-		body, _ = io.ReadAll(r.Body)
+		var err error
+		body, err = io.ReadAll(r.Body)
+		if err != nil {
+			t.Fatalf("read body: %v", err)
+		}
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprintf(w, `{"id":"%s","fields":{"last_alerted_date":"%s"}}`, recID, date.Format("2006-01-02"))
+		if _, err := fmt.Fprintf(w, `{"id":"%s","fields":{"last_alerted_date":"%s"}}`, recID, date.Format("2006-01-02")); err != nil {
+			t.Fatalf("write response: %v", err)
+		}
 	}))
 	defer srv.Close()
 
@@ -70,7 +76,9 @@ func TestUpdateMedicineLastAlertedDate(t *testing.T) {
 func TestUpdateMedicineLastAlertedDate_ignoresMismatch(t *testing.T) {
 	date := time.Date(2025, 6, 10, 0, 0, 0, 0, time.UTC)
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		fmt.Fprint(w, `{"id":"rec","fields":{"last_alerted_date":"2024-01-01"}}`)
+		if _, err := fmt.Fprint(w, `{"id":"rec","fields":{"last_alerted_date":"2024-01-01"}}`); err != nil {
+			t.Fatalf("write response: %v", err)
+		}
 	}))
 	defer srv.Close()
 
@@ -104,7 +112,9 @@ func TestUpdateMedicineLastAlertedDate_errorStatus(t *testing.T) {
 	date := time.Date(2025, 6, 10, 0, 0, 0, 0, time.UTC)
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprint(w, "bad")
+		if _, err := fmt.Fprint(w, "bad"); err != nil {
+			t.Fatalf("write response: %v", err)
+		}
 	}))
 	defer srv.Close()
 
@@ -145,8 +155,14 @@ func TestUpdateForecastDate(t *testing.T) {
 	var body []byte
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		path = r.URL.Path
-		body, _ = io.ReadAll(r.Body)
-		fmt.Fprint(w, `{}`)
+		var err error
+		body, err = io.ReadAll(r.Body)
+		if err != nil {
+			t.Fatalf("read body: %v", err)
+		}
+		if _, err := fmt.Fprint(w, `{}`); err != nil {
+			t.Fatalf("write response: %v", err)
+		}
 	}))
 	defer srv.Close()
 
@@ -189,7 +205,9 @@ func TestUpdateForecastDate(t *testing.T) {
 
 func TestFetchMedicines_AssignsID(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		fmt.Fprint(w, `{"records":[{"id":"recA","fields":{"name":"MedA"}}]}`)
+		if _, err := fmt.Fprint(w, `{"records":[{"id":"recA","fields":{"name":"MedA"}}]}`); err != nil {
+			t.Fatalf("write response: %v", err)
+		}
 	}))
 	defer srv.Close()
 
@@ -217,7 +235,9 @@ func TestFetchFinancialEntries(t *testing.T) {
 	var query string
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		query = r.URL.RawQuery
-		fmt.Fprint(w, `{"records":[{"id":"rec1","fields":{"Date":"2025-06-05","NeedLabel":"Med","NeedAmount":5,"AmountContributed":10,"MonthTag":"2025-06","Contributor":"Alice"}},{"id":"rec2","fields":{"Date":"2025-07-05","NeedLabel":"Med","NeedAmount":5,"AmountContributed":10,"MonthTag":"2025-07","Contributor":"Bob"}}]}`)
+		if _, err := fmt.Fprint(w, `{"records":[{"id":"rec1","fields":{"Date":"2025-06-05","NeedLabel":"Med","NeedAmount":5,"AmountContributed":10,"MonthTag":"2025-06","Contributor":"Alice"}},{"id":"rec2","fields":{"Date":"2025-07-05","NeedLabel":"Med","NeedAmount":5,"AmountContributed":10,"MonthTag":"2025-07","Contributor":"Bob"}}]}`); err != nil {
+			t.Fatalf("write response: %v", err)
+		}
 	}))
 	defer srv.Close()
 
@@ -248,7 +268,9 @@ func TestFetchFinancialEntries(t *testing.T) {
 
 func TestFetchFinancialEntries_fields(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		fmt.Fprint(w, `{"records":[{"id":"rec1","fields":{"Date":"2025-08-10","NeedLabel":"Food","NeedAmount":15,"AmountContributed":5,"MonthTag":"2025-08","Contributor":"Bob"}}]}`)
+		if _, err := fmt.Fprint(w, `{"records":[{"id":"rec1","fields":{"Date":"2025-08-10","NeedLabel":"Food","NeedAmount":15,"AmountContributed":5,"MonthTag":"2025-08","Contributor":"Bob"}}]}`); err != nil {
+			t.Fatalf("write response: %v", err)
+		}
 	}))
 	defer srv.Close()
 
@@ -281,7 +303,9 @@ func TestFetchFinancialEntries_fields(t *testing.T) {
 
 func TestFetchFinancialEntries_zeroContribution(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		fmt.Fprint(w, `{"records":[{"id":"rec1","fields":{"Date":"2025-09-20","NeedLabel":"Med","NeedAmount":100,"AmountContributed":0,"MonthTag":"2025-09","Contributor":"Alice"}}]}`)
+		if _, err := fmt.Fprint(w, `{"records":[{"id":"rec1","fields":{"Date":"2025-09-20","NeedLabel":"Med","NeedAmount":100,"AmountContributed":0,"MonthTag":"2025-09","Contributor":"Alice"}}]}`); err != nil {
+			t.Fatalf("write response: %v", err)
+		}
 	}))
 	defer srv.Close()
 

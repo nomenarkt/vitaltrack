@@ -49,7 +49,9 @@ func (h *httpTelegram) SendTelegramMessage(msg string) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	if err := resp.Body.Close(); err != nil {
+		return err
+	}
 	*h.posted = append(*h.posted, msg)
 	return nil
 }
@@ -152,7 +154,9 @@ func TestStartStockAlertTicker_HTTP(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			posted := []string{}
 			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				_, _ = io.ReadAll(r.Body)
+				if _, err := io.ReadAll(r.Body); err != nil {
+					t.Errorf("read body: %v", err)
+				}
 				posted = append(posted, r.URL.Path)
 				w.WriteHeader(http.StatusOK)
 			}))

@@ -49,17 +49,29 @@ func TestStartFromEnv(t *testing.T) {
 					t.Fatal(err)
 				}
 			} else {
-				os.Unsetenv("ENABLE_ALERT_TICKER")
+				if err := os.Unsetenv("ENABLE_ALERT_TICKER"); err != nil {
+					t.Fatal(err)
+				}
 			}
 			if tt.pollingEnabled {
 				if err := os.Setenv("ENABLE_TELEGRAM_POLLING", "true"); err != nil {
 					t.Fatal(err)
 				}
 			} else {
-				os.Unsetenv("ENABLE_TELEGRAM_POLLING")
+				if err := os.Unsetenv("ENABLE_TELEGRAM_POLLING"); err != nil {
+					t.Fatal(err)
+				}
 			}
-			defer os.Unsetenv("ENABLE_ALERT_TICKER")
-			defer os.Unsetenv("ENABLE_TELEGRAM_POLLING")
+			defer func() {
+				if err := os.Unsetenv("ENABLE_ALERT_TICKER"); err != nil {
+					t.Fatal(err)
+				}
+			}()
+			defer func() {
+				if err := os.Unsetenv("ENABLE_TELEGRAM_POLLING"); err != nil {
+					t.Fatal(err)
+				}
+			}()
 
 			tickerCalled := false
 			pollingCalled := false
@@ -108,12 +120,24 @@ func TestNewApp(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer func() {
-		os.Unsetenv("AIRTABLE_BASE_ID")
-		os.Unsetenv("AIRTABLE_MEDICINES_TABLE")
-		os.Unsetenv("AIRTABLE_ENTRIES_TABLE")
-		os.Unsetenv("AIRTABLE_TOKEN")
-		os.Unsetenv("TELEGRAM_BOT_TOKEN")
-		os.Unsetenv("TELEGRAM_CHAT_ID")
+		if err := os.Unsetenv("AIRTABLE_BASE_ID"); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Unsetenv("AIRTABLE_MEDICINES_TABLE"); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Unsetenv("AIRTABLE_ENTRIES_TABLE"); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Unsetenv("AIRTABLE_TOKEN"); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Unsetenv("TELEGRAM_BOT_TOKEN"); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Unsetenv("TELEGRAM_CHAT_ID"); err != nil {
+			t.Fatal(err)
+		}
 	}()
 
 	tests := []struct {
@@ -136,17 +160,29 @@ func TestNewApp(t *testing.T) {
 					t.Fatal(err)
 				}
 			} else {
-				os.Unsetenv("ENABLE_ALERT_TICKER")
+				if err := os.Unsetenv("ENABLE_ALERT_TICKER"); err != nil {
+					t.Fatal(err)
+				}
 			}
 			if tt.pollingEnabled {
 				if err := os.Setenv("ENABLE_TELEGRAM_POLLING", "true"); err != nil {
 					t.Fatal(err)
 				}
 			} else {
-				os.Unsetenv("ENABLE_TELEGRAM_POLLING")
+				if err := os.Unsetenv("ENABLE_TELEGRAM_POLLING"); err != nil {
+					t.Fatal(err)
+				}
 			}
-			defer os.Unsetenv("ENABLE_ALERT_TICKER")
-			defer os.Unsetenv("ENABLE_TELEGRAM_POLLING")
+			defer func() {
+				if err := os.Unsetenv("ENABLE_ALERT_TICKER"); err != nil {
+					t.Fatal(err)
+				}
+			}()
+			defer func() {
+				if err := os.Unsetenv("ENABLE_TELEGRAM_POLLING"); err != nil {
+					t.Fatal(err)
+				}
+			}()
 
 			tickerCalled := false
 			pollingCalled := false

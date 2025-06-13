@@ -42,8 +42,12 @@ type mockTelegram struct{ done chan struct{} }
 
 func (m *mockTelegram) SendTelegramMessage(string) error { return nil }
 func (m *mockTelegram) PollForCommands(fetch func() ([]domain.Medicine, []domain.StockEntry, error), report func(int, int) (domain.MonthlyFinancialReport, error)) {
-	fetch()
-	report(2024, 6)
+	if _, _, err := fetch(); err != nil {
+		panic(err)
+	}
+	if _, err := report(2024, 6); err != nil {
+		panic(err)
+	}
 	close(m.done)
 }
 
