@@ -75,7 +75,7 @@ jobs:
         with:
           version: v1.57.2
           working-directory: backend
-          args: --timeout=3m --format=github-actions ./...
+          args: --timeout=3m --out-format=github-actions ./...
 
       # Optional: security scanning
       # - name: 🔐 Run gosec for static security analysis
