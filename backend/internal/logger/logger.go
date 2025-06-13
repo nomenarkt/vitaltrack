@@ -22,12 +22,12 @@ func NewStdLogger() *StdLogger { return &StdLogger{} }
 
 // Info logs an informational message with optional key-value pairs.
 func (l *StdLogger) Info(_ context.Context, msg string, kv ...any) {
-	log.Println(format(msg, kv...))
+	log.Printf("%s", format(msg, kv...))
 }
 
 // Error logs an error message with optional key-value pairs.
 func (l *StdLogger) Error(_ context.Context, msg string, kv ...any) {
-	log.Println(format(msg, kv...))
+	log.Printf("%s", format(msg, kv...))
 }
 
 func format(msg string, kv ...any) string {
