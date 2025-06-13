@@ -42,11 +42,19 @@ type mockTelegram struct{ done chan struct{} }
 
 func (m *mockTelegram) SendTelegramMessage(string) error { return nil }
 func (m *mockTelegram) PollForCommands(fetch func() ([]domain.Medicine, []domain.StockEntry, error), report func(int, int) (domain.MonthlyFinancialReport, error)) {
-	if _, _, err := fetch(); err != nil {
+	meds, entries, err := fetch()
+	if err != nil {
 		panic(err)
 	}
-	if _, err := report(2024, 6); err != nil {
+	if len(meds) == 0 && len(entries) == 0 {
+		// keep behaviour but ensure variables used
+	}
+	rep, err := report(2024, 6)
+	if err != nil {
 		panic(err)
+	}
+	if rep.Year == 0 && len(rep.Needs) == 0 {
+		// ignore content
 	}
 	close(m.done)
 }

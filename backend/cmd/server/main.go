@@ -11,7 +11,9 @@ import (
 )
 
 func main() {
-	_ = godotenv.Load()
+	if err := godotenv.Load(); err != nil {
+		log.Printf("godotenv load: %v", err)
+	}
 
 	app := di.NewApp()
 

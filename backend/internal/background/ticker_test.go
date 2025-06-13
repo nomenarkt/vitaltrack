@@ -154,9 +154,11 @@ func TestStartStockAlertTicker_HTTP(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			posted := []string{}
 			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				if _, err := io.ReadAll(r.Body); err != nil {
+				body, err := io.ReadAll(r.Body)
+				if err != nil {
 					t.Errorf("read body: %v", err)
 				}
+				_ = body
 				posted = append(posted, r.URL.Path)
 				w.WriteHeader(http.StatusOK)
 			}))

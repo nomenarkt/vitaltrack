@@ -44,8 +44,14 @@ func TestGenerateOutOfStockForecastMessage(t *testing.T) {
 	mock := &mockStockDataPort{}
 	now := time.Date(2025, 6, 4, 0, 0, 0, 0, time.UTC)
 
-	meds, _ := mock.FetchMedicines()
-	entries, _ := mock.FetchStockEntries()
+	meds, err := mock.FetchMedicines()
+	if err != nil {
+		t.Fatalf("fetch meds: %v", err)
+	}
+	entries, err := mock.FetchStockEntries()
+	if err != nil {
+		t.Fatalf("fetch entries: %v", err)
+	}
 
 	msg := forecast.GenerateOutOfStockForecastMessage(meds, entries, now, mock)
 	if msg == "" {
