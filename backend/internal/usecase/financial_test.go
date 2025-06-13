@@ -14,7 +14,7 @@ type mockFinanceRepo struct {
 	entries []domain.FinancialEntry
 }
 
-func (m mockFinanceRepo) FetchFinancialEntries(year int, month time.Month) ([]domain.FinancialEntry, error) {
+func (m mockFinanceRepo) FetchFinancialEntries(_ int, _ time.Month) ([]domain.FinancialEntry, error) {
 	return m.entries, nil
 }
 
