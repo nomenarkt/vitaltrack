@@ -57,7 +57,10 @@ func (c *Client) FetchMedicines() ([]domain.Medicine, error) {
 		os.Getenv("AIRTABLE_BASE_ID"),
 		os.Getenv("AIRTABLE_MEDICINES_TABLE"))
 
-	req, _ := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
 	req.Header.Set("Authorization", "Bearer "+os.Getenv("AIRTABLE_TOKEN"))
 
 	res, err := http.DefaultClient.Do(req)
@@ -70,7 +73,10 @@ func (c *Client) FetchMedicines() ([]domain.Medicine, error) {
 		}
 	}()
 
-	body, _ := io.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
 
 	var errCheck map[string]interface{}
 	if json.Unmarshal(body, &errCheck) == nil {
@@ -100,7 +106,10 @@ func (c *Client) FetchStockEntries() ([]domain.StockEntry, error) {
 		os.Getenv("AIRTABLE_BASE_ID"),
 		os.Getenv("AIRTABLE_ENTRIES_TABLE"))
 
-	req, _ := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
 	req.Header.Set("Authorization", "Bearer "+os.Getenv("AIRTABLE_TOKEN"))
 
 	res, err := http.DefaultClient.Do(req)
@@ -113,7 +122,10 @@ func (c *Client) FetchStockEntries() ([]domain.StockEntry, error) {
 		}
 	}()
 
-	body, _ := io.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
 
 	var errCheck map[string]interface{}
 	if json.Unmarshal(body, &errCheck) == nil {
@@ -154,7 +166,10 @@ func (c *Client) CreateStockEntry(entry domain.StockEntry) error {
 
 	body, _ := json.Marshal(payload)
 
-	req, _ := http.NewRequest("POST", url, bytes.NewReader(body))
+	req, err := http.NewRequest("POST", url, bytes.NewReader(body))
+	if err != nil {
+		return err
+	}
 	req.Header.Set("Authorization", "Bearer "+os.Getenv("AIRTABLE_TOKEN"))
 	req.Header.Set("Content-Type", "application/json")
 
@@ -169,7 +184,10 @@ func (c *Client) CreateStockEntry(entry domain.StockEntry) error {
 	}()
 
 	if res.StatusCode >= 300 {
-		b, _ := io.ReadAll(res.Body)
+		b, readErr := io.ReadAll(res.Body)
+		if readErr != nil {
+			return fmt.Errorf("airtable status %d read body error: %w", res.StatusCode, readErr)
+		}
 		return fmt.Errorf("airtable error: %s", string(b))
 	}
 
@@ -194,7 +212,10 @@ func (c *Client) UpdateForecastDate(medicineID string, forecastDate, updatedAt t
 	body, _ := json.Marshal(payload)
 	log.Printf("🧪 PATCH Airtable: recordID=%s body=%s", medicineID, string(body))
 
-	req, _ := http.NewRequest("PATCH", url, bytes.NewReader(body))
+	req, err := http.NewRequest("PATCH", url, bytes.NewReader(body))
+	if err != nil {
+		return err
+	}
 	req.Header.Set("Authorization", "Bearer "+os.Getenv("AIRTABLE_TOKEN"))
 	req.Header.Set("Content-Type", "application/json")
 
@@ -209,7 +230,10 @@ func (c *Client) UpdateForecastDate(medicineID string, forecastDate, updatedAt t
 	}()
 
 	if res.StatusCode >= 300 {
-		b, _ := io.ReadAll(res.Body)
+		b, readErr := io.ReadAll(res.Body)
+		if readErr != nil {
+			return fmt.Errorf("airtable status %d read body error: %w", res.StatusCode, readErr)
+		}
 		return fmt.Errorf("airtable error: %s", string(b))
 	}
 
@@ -233,7 +257,10 @@ func (c *Client) UpdateMedicineLastAlertedDate(medicineID string, date time.Time
 	body, _ := json.Marshal(payload)
 	log.Printf("🧪 PATCH Airtable: recordID=%s body=%s", medicineID, string(body))
 
-	req, _ := http.NewRequest("PATCH", url, bytes.NewReader(body))
+	req, err := http.NewRequest("PATCH", url, bytes.NewReader(body))
+	if err != nil {
+		return err
+	}
 	req.Header.Set("Authorization", "Bearer "+os.Getenv("AIRTABLE_TOKEN"))
 	req.Header.Set("Content-Type", "application/json")
 
@@ -247,7 +274,10 @@ func (c *Client) UpdateMedicineLastAlertedDate(medicineID string, date time.Time
 		}
 	}()
 
-	b, _ := io.ReadAll(res.Body)
+	b, readErr := io.ReadAll(res.Body)
+	if readErr != nil {
+		return readErr
+	}
 	if res.StatusCode != http.StatusOK {
 		log.Printf("airtable update failed: status=%d body=%s", res.StatusCode, string(b))
 		return fmt.Errorf("airtable error: %s", string(b))
@@ -275,16 +305,26 @@ func (c *Client) FetchFinancialEntries(year int, month time.Month) ([]domain.Fin
 		os.Getenv("AIRTABLE_FINANCIAL_TABLE"),
 		query)
 
-	req, _ := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
 	req.Header.Set("Authorization", "Bearer "+os.Getenv("AIRTABLE_TOKEN"))
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
-	defer res.Body.Close()
+	defer func() {
+		if cerr := res.Body.Close(); cerr != nil {
+			log.Printf("airtable response close error: %v", cerr)
+		}
+	}()
 
-	body, _ := io.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
 	log.Printf("🧾 Raw Airtable response: %s", string(body))
 
 	var errCheck map[string]interface{}
