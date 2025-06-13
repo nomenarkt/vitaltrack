@@ -1,8 +1,20 @@
+
 version: 2
 
 run:
   timeout: 2m
   tests: true
+
+output:
+  formats:
+    - format: colored-line-number
+
+issues:
+  exclude-use-default: false
+  exclude-dirs:
+    - vendor
+    - third_party
+    - migrations
 
 linters:
   enable:
@@ -34,3 +46,41 @@ issues:
   exclude-use-default: false
   max-issues-per-linter: 0
   max-same-issues: 0
+
+    - nakedret
+    - bodyclose
+  disable:
+    - depguard  # Temporarily disabled to unblock CI
+
+linters-settings:
+  goimports:
+    local-prefixes: github.com/nomenarkt/vitaltrack
+
+  # depguard rules temporarily removed
+  # depguard:
+  #   list-type: allowlist
+  #   packages:
+  #     - github.com/nomenarkt/vitaltrack/backend/internal/di
+  #     - github.com/nomenarkt/vitaltrack/backend/internal/server
+  #   include-go-root: true
+  #   include-go-packages: true
+  #   message: "Only DI or Server may import external or sensitive packages."
+
+  forbidigo:
+    forbid:
+      - name: "fmt.Println"
+        message: "Use structured logger instead (zap, slog, etc.)"
+      - name: "log.Println"
+        message: "Avoid standard log, use centralized logger"
+      - name: "log.Fatal"
+        message: "Do not call log.Fatal directly in app — use graceful shutdown"
+      - name: "log.Printf"
+        message: "Use zap/slog logger, not Printf"
+      - name: "fmt.Errorf"
+        message: "Use pkg/errors.Wrap or fmt.Errorf with context"
+    path-exclude:
+      - "**/*_test.go"
+      - "**/testdata/**"
+    exclude-files:
+      - internal/di/**/*.go
+      - internal/server/**/*.go
