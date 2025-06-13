@@ -23,7 +23,9 @@ type Client struct {
 
 // NewClient returns a Client configured from environment variables.
 func NewClient() *Client {
-	_ = godotenv.Load()
+	if err := godotenv.Load(); err != nil {
+		log.Printf("godotenv load: %v", err)
+	}
 
 	// Validate required environment variables to avoid runtime errors
 	if os.Getenv("AIRTABLE_BASE_ID") == "" ||
@@ -164,7 +166,10 @@ func (c *Client) CreateStockEntry(entry domain.StockEntry) error {
 		},
 	}
 
-	body, _ := json.Marshal(payload)
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
 
 	req, err := http.NewRequest("POST", url, bytes.NewReader(body))
 	if err != nil {
@@ -209,7 +214,10 @@ func (c *Client) UpdateForecastDate(medicineID string, forecastDate, updatedAt t
 		},
 	}
 
-	body, _ := json.Marshal(payload)
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
 	log.Printf("🧪 PATCH Airtable: recordID=%s body=%s", medicineID, string(body))
 
 	req, err := http.NewRequest("PATCH", url, bytes.NewReader(body))
@@ -254,7 +262,10 @@ func (c *Client) UpdateMedicineLastAlertedDate(medicineID string, date time.Time
 		},
 	}
 
-	body, _ := json.Marshal(payload)
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
 	log.Printf("🧪 PATCH Airtable: recordID=%s body=%s", medicineID, string(body))
 
 	req, err := http.NewRequest("PATCH", url, bytes.NewReader(body))

@@ -55,7 +55,10 @@ func TestCurrentStockAt_WithMultipleEntryDates(t *testing.T) {
 		InitialStock: 5,
 	}
 
-	today, _ := time.Parse("2006-01-02", "2025-06-04")
+	today, err := time.Parse("2006-01-02", "2025-06-04")
+	if err != nil {
+		t.Fatalf("parse date: %v", err)
+	}
 
 	entries := []domain.StockEntry{
 		{MedicineID: "med1", Quantity: 1.0, Unit: "box", Date: domain.NewFlexibleDate(today)},                    // +10

@@ -16,10 +16,12 @@ import (
 	"github.com/nomenarkt/vitaltrack/backend/internal/util"
 )
 
-func newTestServer() (*httptest.Server, *[]string) {
+func newTestServer(t *testing.T) (*httptest.Server, *[]string) {
 	msgs := &[]string{}
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		_ = r.ParseForm()
+		if err := r.ParseForm(); err != nil {
+			t.Fatalf("parse form: %v", err)
+		}
 		*msgs = append(*msgs, r.Form.Get("text"))
 		w.WriteHeader(http.StatusOK)
 	}))
@@ -63,7 +65,7 @@ func TestHandleStockCommand(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			srv, msgs := newTestServer()
+			srv, msgs := newTestServer(t)
 			defer srv.Close()
 
 			var logBuf bytes.Buffer
@@ -94,7 +96,7 @@ func TestHandleStockCommand(t *testing.T) {
 }
 
 func TestHandleStockCommand_onlyInitialStock(t *testing.T) {
-	srv, msgs := newTestServer()
+	srv, msgs := newTestServer(t)
 	defer srv.Close()
 
 	now := time.Now().AddDate(0, 0, -2)
@@ -118,7 +120,7 @@ func TestHandleStockCommand_onlyInitialStock(t *testing.T) {
 }
 
 func TestHandleStockCommand_withFloatEntries(t *testing.T) {
-	srv, msgs := newTestServer()
+	srv, msgs := newTestServer(t)
 	defer srv.Close()
 
 	now := time.Now().AddDate(0, 0, -1)
@@ -143,7 +145,7 @@ func TestHandleStockCommand_withFloatEntries(t *testing.T) {
 }
 
 func TestHandleStockCommand_zeroDose(t *testing.T) {
-	srv, msgs := newTestServer()
+	srv, msgs := newTestServer(t)
 	defer srv.Close()
 
 	now := time.Now().AddDate(0, 0, -1)
@@ -168,7 +170,7 @@ func TestHandleStockCommand_zeroDose(t *testing.T) {
 }
 
 func TestHandleStockCommand_partialDose(t *testing.T) {
-	srv, msgs := newTestServer()
+	srv, msgs := newTestServer(t)
 	defer srv.Close()
 
 	now := time.Now().UTC().Truncate(24 * time.Hour)
@@ -204,7 +206,7 @@ func TestHandleStockCommand_partialDose(t *testing.T) {
 }
 
 func TestHandleStockCommand_refillAppliedCumulatively(t *testing.T) {
-	srv, msgs := newTestServer()
+	srv, msgs := newTestServer(t)
 	defer srv.Close()
 
 	now := time.Now().UTC().Truncate(24 * time.Hour)
@@ -233,7 +235,7 @@ func TestHandleStockCommand_refillAppliedCumulatively(t *testing.T) {
 }
 
 func TestHandleStockCommand_fetchError(t *testing.T) {
-	srv, msgs := newTestServer()
+	srv, msgs := newTestServer(t)
 	defer srv.Close()
 
 	fetch := func() ([]domain.Medicine, []domain.StockEntry, error) {
@@ -257,7 +259,7 @@ func (m mockFinanceRepo) FetchFinancialEntries(year int, month time.Month) ([]do
 }
 
 func TestHandleFinanceCommand(t *testing.T) {
-	srv, msgs := newTestServer()
+	srv, msgs := newTestServer(t)
 	defer srv.Close()
 
 	date := time.Date(2025, 6, 5, 0, 0, 0, 0, time.UTC)
@@ -310,7 +312,7 @@ func TestHandleFinanceCommand(t *testing.T) {
 }
 
 func TestSendTo_escapesMarkdown(t *testing.T) {
-	srv, msgs := newTestServer()
+	srv, msgs := newTestServer(t)
 	defer srv.Close()
 
 	c := &Client{Token: "test", ChatID: "1", baseURL: srv.URL}

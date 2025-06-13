@@ -31,7 +31,9 @@ type Client struct {
 
 // NewClient constructs a Client using environment variables for configuration.
 func NewClient() *Client {
-	_ = godotenv.Load()
+	if err := godotenv.Load(); err != nil {
+		log.Printf("godotenv load: %v", err)
+	}
 
 	token := os.Getenv("TELEGRAM_BOT_TOKEN")
 	chatID := os.Getenv("TELEGRAM_CHAT_ID")
@@ -62,7 +64,10 @@ func (c *Client) SendTelegramMessage(msg string) error {
 		"parse_mode": "MarkdownV2",
 	}
 
-	body, _ := json.Marshal(payload)
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
 
 	res, err := http.Post(
 		c.baseURL+"/bot"+c.Token+"/sendMessage",
@@ -119,7 +124,11 @@ func (c *Client) PollForCommands(
 			log.Printf("Telegram polling error: %v", err)
 			continue
 		}
-		body, _ := io.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			log.Printf("Telegram polling read body error: %v", err)
+			continue
+		}
 		if err := resp.Body.Close(); err != nil {
 			log.Printf("Telegram response close error: %v", err)
 		}
@@ -276,7 +285,11 @@ func (c *Client) sendTo(chatID int64, msg string) error {
 	}()
 
 	if res.StatusCode >= http.StatusMultipleChoices {
-		body, _ := io.ReadAll(res.Body)
+		body, err := io.ReadAll(res.Body)
+		if err != nil {
+			log.Printf("telegram read body error: %v", err)
+			return fmt.Errorf("telegram error status: %d", res.StatusCode)
+		}
 		log.Printf("telegram send failed: status=%d body=%s", res.StatusCode, string(body))
 		return fmt.Errorf("telegram error status: %d", res.StatusCode)
 	}
