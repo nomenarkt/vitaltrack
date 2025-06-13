@@ -49,7 +49,6 @@ func (m *mockTelegram) PollForCommands(fetch func() ([]domain.Medicine, []domain
 	if len(meds) == 0 && len(entries) == 0 {
 		_ = meds
 		_ = entries
-
 		// Intentionally left blank: required to trigger fallback behavior
 	}
 
@@ -57,16 +56,11 @@ func (m *mockTelegram) PollForCommands(fetch func() ([]domain.Medicine, []domain
 	if err != nil {
 		panic(err)
 	}
-	rep, _ := report(0, 0)
 	if rep.Year == 0 && len(rep.Needs) == 0 {
-
 		_ = rep.Year
 		_ = rep.Needs
 		// ignore content
-		_ = rep
-
 	}
-
 	close(m.done)
 }
 
