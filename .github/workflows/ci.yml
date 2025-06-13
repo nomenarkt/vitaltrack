@@ -45,8 +45,10 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: ${{ runner.os }}-go-
 
-      - name: 📦 Download Go modules
-        run: go mod download
+      - name: 📦 Ensure dependencies are installed
+        run: |
+          go mod tidy
+          go mod download
 
       - name: ✅ Run unit tests
         run: go test -v ./...
