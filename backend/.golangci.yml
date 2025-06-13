@@ -1,20 +1,10 @@
-# Compatible config for golangci-lint v2.1.6 (removes advanced keys and unsupported options)
 version: "2"
 
 run:
   timeout: 3m
   tests: true
-  skip-dirs:
-    - vendor
-    - third_party
-    - migrations
-
-output:
-  # 'format' is not supported in v2.1.6 config, remove this line
-  # format: colored-line-number
 
 issues:
-  # 'exclude-use-default' and 'exclude-rules' are not supported in v2.1.6 config, remove these lines
   max-issues-per-linter: 0
   max-same-issues: 0
 
@@ -30,5 +20,3 @@ linters:
     - nakedret
     - bodyclose
     - forbidigo
-
-# 'linters-settings' is not supported in v2.1.6 config, remove this section entirely
