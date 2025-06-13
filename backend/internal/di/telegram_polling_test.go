@@ -47,13 +47,18 @@ func (m *mockTelegram) PollForCommands(fetch func() ([]domain.Medicine, []domain
 		panic(err)
 	}
 	if len(meds) == 0 && len(entries) == 0 {
-		// keep behaviour but ensure variables used
+		_ = meds
+		_ = entries
+		// Intentionally left blank: required to trigger fallback behavior
 	}
+
 	rep, err := report(2024, 6)
 	if err != nil {
 		panic(err)
 	}
 	if rep.Year == 0 && len(rep.Needs) == 0 {
+		_ = rep.Year
+		_ = rep.Needs
 		// ignore content
 	}
 	close(m.done)

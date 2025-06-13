@@ -254,7 +254,7 @@ func TestHandleStockCommand_fetchError(t *testing.T) {
 
 type mockFinanceRepo struct{ entries []domain.FinancialEntry }
 
-func (m mockFinanceRepo) FetchFinancialEntries(year int, month time.Month) ([]domain.FinancialEntry, error) {
+func (m mockFinanceRepo) FetchFinancialEntries(_ int, _ time.Month) ([]domain.FinancialEntry, error) {
 	return m.entries, nil
 }
 
@@ -275,7 +275,7 @@ func TestHandleFinanceCommand(t *testing.T) {
 		t.Fatalf("generate report error: %v", err)
 	}
 
-	fn := func(y, m int) (domain.MonthlyFinancialReport, error) { return report, nil }
+	fn := func(_, _ int) (domain.MonthlyFinancialReport, error) { return report, nil }
 	c := &Client{Token: "tok", ChatID: "1", baseURL: srv.URL}
 	c.handleFinanceCommand(55, fn, 2025, time.June)
 
