@@ -3,6 +3,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/joho/godotenv"
 
@@ -17,5 +18,8 @@ func main() {
 
 	app := di.NewApp()
 
-	log.Fatal(app.Listen(":8787"))
+	if err := app.Listen(":8787"); err != nil {
+		log.Printf("❌ Server failed to start: %v", err)
+		os.Exit(1)
+	}
 }
