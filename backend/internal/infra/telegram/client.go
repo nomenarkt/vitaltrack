@@ -74,7 +74,7 @@ func (c *Client) SendTelegramMessage(msg string) error {
 	}
 	defer func() {
 		if cerr := res.Body.Close(); cerr != nil {
-			log.Println("telegram response close error:", cerr)
+			log.Printf("telegram response close error: %v", cerr)
 		}
 	}()
 
@@ -109,24 +109,24 @@ func (c *Client) PollForCommands(
 ) {
 	var lastUpdateID int
 
-	log.Println("📨 Telegram polling started...")
+	log.Printf("%s", "📨 Telegram polling started...")
 	for {
 		time.Sleep(2 * time.Second)
 
 		apiURL := fmt.Sprintf("%s/bot%s/getUpdates?timeout=10&offset=%d", c.baseURL, c.Token, lastUpdateID+1)
 		resp, err := http.Get(apiURL)
 		if err != nil {
-			log.Println("Telegram polling error:", err)
+			log.Printf("Telegram polling error: %v", err)
 			continue
 		}
 		body, _ := io.ReadAll(resp.Body)
 		if err := resp.Body.Close(); err != nil {
-			log.Println("Telegram response close error:", err)
+			log.Printf("Telegram response close error: %v", err)
 		}
 
 		var updates GetUpdatesResponse
 		if err := json.Unmarshal(body, &updates); err != nil {
-			log.Println("Failed to decode Telegram updates:", err)
+			log.Printf("Failed to decode Telegram updates: %v", err)
 			continue
 		}
 		if !updates.OK {
@@ -138,10 +138,10 @@ func (c *Client) PollForCommands(
 			lastUpdateID = update.UpdateID
 			switch {
 			case update.Message.Text == "/stock":
-				log.Println("🟡 /stock command triggered")
+				log.Printf("%s", "🟡 /stock command triggered")
 				go c.handleStockCommand(update.Message.Chat.ID, fetchData)
 			case strings.HasPrefix(update.Message.Text, "/finance"):
-				log.Println("🟡 /finance command triggered")
+				log.Printf("%s", "🟡 /finance command triggered")
 				year, month := time.Now().Year(), time.Now().Month()
 				parts := strings.Fields(update.Message.Text)
 				if len(parts) > 1 {
@@ -159,7 +159,7 @@ func (c *Client) handleStockCommand(chatID int64, fetchData func() ([]domain.Med
 	meds, entries, err := fetchData()
 	if err != nil {
 		if err := c.sendTo(chatID, "\u26a0\ufe0f Failed to fetch stock data."); err != nil {
-			log.Println("failed to send /stock response:", err)
+			log.Printf("failed to send /stock response: %v", err)
 		}
 		return
 	}
@@ -167,7 +167,7 @@ func (c *Client) handleStockCommand(chatID int64, fetchData func() ([]domain.Med
 	log.Printf("📦 meds: %d, entries: %d", len(meds), len(entries))
 	if len(meds) == 0 {
 		if err := c.sendTo(chatID, "\u26a0\ufe0f No medicine or stock data found."); err != nil {
-			log.Println("failed to send /stock response:", err)
+			log.Printf("failed to send /stock response: %v", err)
 		}
 		return
 	}
@@ -190,7 +190,7 @@ func (c *Client) handleStockCommand(chatID int64, fetchData func() ([]domain.Med
 
 	if len(rows) == 0 {
 		if err := c.sendTo(chatID, "\u2705 All medicines are well stocked."); err != nil {
-			log.Println("failed to send /stock response:", err)
+			log.Printf("failed to send /stock response: %v", err)
 		}
 		return
 	}
@@ -206,9 +206,9 @@ func (c *Client) handleStockCommand(chatID int64, fetchData func() ([]domain.Med
 
 	msg := "*Out-of-Stock Forecast*\n\n```text\n" + strings.Join(lines, "\n") + "\n```"
 	if err := c.sendTo(chatID, msg); err != nil {
-		log.Println("failed to send /stock response:", err)
+		log.Printf("failed to send /stock response: %v", err)
 	} else {
-		log.Println("sent /stock forecast")
+		log.Printf("%s", "sent /stock forecast")
 	}
 }
 
@@ -217,7 +217,7 @@ func (c *Client) handleFinanceCommand(chatID int64, fn func(year, month int) (do
 	report, err := fn(year, int(month))
 	if err != nil {
 		if err := c.sendTo(chatID, "\u26a0\ufe0f Failed to fetch financial data."); err != nil {
-			log.Println("failed to send /finance response:", err)
+			log.Printf("failed to send /finance response: %v", err)
 		}
 		return
 	}
@@ -243,7 +243,7 @@ func (c *Client) handleFinanceCommand(chatID int64, fn func(year, month int) (do
 		report.Year, report.Month, strings.Join(sections, "\n\n"), strings.Join(summary, "\n"))
 
 	if err := c.sendTo(chatID, msg); err != nil {
-		log.Println("failed to send /finance response:", err)
+		log.Printf("failed to send /finance response: %v", err)
 	}
 }
 
@@ -271,7 +271,7 @@ func (c *Client) sendTo(chatID int64, msg string) error {
 	}
 	defer func() {
 		if cerr := res.Body.Close(); cerr != nil {
-			log.Println("telegram response close error:", cerr)
+			log.Printf("telegram response close error: %v", cerr)
 		}
 	}()
 

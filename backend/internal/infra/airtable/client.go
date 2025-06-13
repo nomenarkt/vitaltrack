@@ -66,7 +66,7 @@ func (c *Client) FetchMedicines() ([]domain.Medicine, error) {
 	}
 	defer func() {
 		if cerr := res.Body.Close(); cerr != nil {
-			log.Println("airtable response close error:", cerr)
+			log.Printf("airtable response close error: %v", cerr)
 		}
 	}()
 
@@ -109,7 +109,7 @@ func (c *Client) FetchStockEntries() ([]domain.StockEntry, error) {
 	}
 	defer func() {
 		if cerr := res.Body.Close(); cerr != nil {
-			log.Println("airtable response close error:", cerr)
+			log.Printf("airtable response close error: %v", cerr)
 		}
 	}()
 
@@ -164,7 +164,7 @@ func (c *Client) CreateStockEntry(entry domain.StockEntry) error {
 	}
 	defer func() {
 		if cerr := res.Body.Close(); cerr != nil {
-			log.Println("airtable response close error:", cerr)
+			log.Printf("airtable response close error: %v", cerr)
 		}
 	}()
 
@@ -204,7 +204,7 @@ func (c *Client) UpdateForecastDate(medicineID string, forecastDate, updatedAt t
 	}
 	defer func() {
 		if cerr := res.Body.Close(); cerr != nil {
-			log.Println("airtable response close error:", cerr)
+			log.Printf("airtable response close error: %v", cerr)
 		}
 	}()
 
@@ -243,7 +243,7 @@ func (c *Client) UpdateMedicineLastAlertedDate(medicineID string, date time.Time
 	}
 	defer func() {
 		if cerr := res.Body.Close(); cerr != nil {
-			log.Println("airtable response close error:", cerr)
+			log.Printf("airtable response close error: %v", cerr)
 		}
 	}()
 
@@ -285,7 +285,7 @@ func (c *Client) FetchFinancialEntries(year int, month time.Month) ([]domain.Fin
 	defer res.Body.Close()
 
 	body, _ := io.ReadAll(res.Body)
-	log.Println("🧾 Raw Airtable response:", string(body))
+	log.Printf("🧾 Raw Airtable response: %s", string(body))
 
 	var errCheck map[string]interface{}
 	if json.Unmarshal(body, &errCheck) == nil {
