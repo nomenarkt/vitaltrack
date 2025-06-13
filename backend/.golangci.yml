@@ -1,5 +1,8 @@
+
+version: 2
+
 run:
-  timeout: 3m
+  timeout: 2m
   tests: true
 
 output:
@@ -15,13 +18,35 @@ issues:
 
 linters:
   enable:
-    - govet
     - errcheck
-    - staticcheck
-    - revive
-    - gocritic
+    - govet
     - ineffassign
+    - staticcheck
     - unused
+    - revive
+
+linters-settings:
+  revive:
+    ignore-generated-header: true
+    severity: warning
+    rules:
+      - name: indent-error-flow
+      - name: var-naming
+      - name: if-return
+      - name: range-val-address
+      - name: blank-imports
+      - name: export-loop-ref
+      - name: error-strings
+      - name: indent-error-flow
+      - name: import-shadowing
+      - name: dot-imports
+      - name: unreachable-code
+
+issues:
+  exclude-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
     - nakedret
     - bodyclose
   disable:
