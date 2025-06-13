@@ -30,7 +30,7 @@ func NewClient() *Client {
 		os.Getenv("AIRTABLE_MEDICINES_TABLE") == "" ||
 		os.Getenv("AIRTABLE_ENTRIES_TABLE") == "" ||
 		os.Getenv("AIRTABLE_TOKEN") == "" {
-		log.Fatal("missing Airtable configuration: ensure AIRTABLE_BASE_ID, AIRTABLE_MEDICINES_TABLE, AIRTABLE_ENTRIES_TABLE and AIRTABLE_TOKEN are set")
+		panic("missing Airtable configuration: ensure AIRTABLE_BASE_ID, AIRTABLE_MEDICINES_TABLE, AIRTABLE_ENTRIES_TABLE and AIRTABLE_TOKEN are set")
 	}
 
 	baseURL := os.Getenv("AIRTABLE_API_BASE_URL")

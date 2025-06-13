@@ -40,7 +40,7 @@ func NewClient() *Client {
 		baseURL = "https://api.telegram.org"
 	}
 	if token == "" || chatID == "" {
-		log.Fatal("missing Telegram configuration: TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID must be set")
+		panic("missing Telegram configuration: TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID must be set")
 	}
 
 	return &Client{
