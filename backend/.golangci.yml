@@ -1,3 +1,4 @@
+# Compatible config for golangci-lint v2.1.6 (removes advanced keys and unsupported options)
 version: "2"
 
 run:
@@ -9,25 +10,13 @@ run:
     - migrations
 
 output:
-  format: colored-line-number
+  # 'format' is not supported in v2.1.6 config, remove this line
+  # format: colored-line-number
 
 issues:
-  exclude-use-default: false
+  # 'exclude-use-default' and 'exclude-rules' are not supported in v2.1.6 config, remove these lines
   max-issues-per-linter: 0
   max-same-issues: 0
-  exclude-rules:
-    - linters:
-        - errcheck
-      text: "defer .*Close.*"
-    - linters:
-        - revive
-      text: "should have comment or be unexported"
-    - linters:
-        - unused
-      text: "parameter '.*' seems to be unused"
-    - linters:
-        - forbidigo
-      path: ".*_test.go"
 
 linters:
   enable:
@@ -42,21 +31,4 @@ linters:
     - bodyclose
     - forbidigo
 
-linters-settings:
-  goimports:
-    local-prefixes: github.com/nomenarkt/vitaltrack
-
-  forbidigo:
-    forbid:
-      - name: "fmt.Println"
-        message: "Use structured logger instead (zap, slog, etc.)"
-      - name: "log.Println"
-        message: "Avoid standard log, use centralized logger"
-      - name: "log.Fatal"
-        message: "Do not call log.Fatal directly in app — use graceful shutdown"
-    path-exclude:
-      - "**/*_test.go"
-      - "**/testdata/**"
-    exclude-files:
-      - internal/di/**/*.go
-      - internal/server/**/*.go
+# 'linters-settings' is not supported in v2.1.6 config, remove this section entirely
