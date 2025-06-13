@@ -28,12 +28,12 @@ func (m *mockStockDataPort) FetchStockEntries() ([]domain.StockEntry, error) {
 	return []domain.StockEntry{}, nil
 }
 
-func (m *mockStockDataPort) CreateStockEntry(entry domain.StockEntry) error {
+func (m *mockStockDataPort) CreateStockEntry(_ domain.StockEntry) error {
 	return nil
 }
 
 // ✅ Corrected method signature here
-func (m *mockStockDataPort) UpdateForecastDate(medicineID string, startDate time.Time, outOfStockDate time.Time) error {
+func (m *mockStockDataPort) UpdateForecastDate(_ string, _ time.Time, _ time.Time) error {
 	return nil
 }
 func (m *mockStockDataPort) FetchFinancialEntries(int, time.Month) ([]domain.FinancialEntry, error) {

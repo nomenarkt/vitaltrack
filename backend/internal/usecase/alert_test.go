@@ -42,7 +42,7 @@ func (m *mockTelegram) SendTelegramMessage(msg string) error {
 	return nil
 }
 
-func (m *mockTelegram) PollForCommands(fetchData func() ([]domain.Medicine, []domain.StockEntry, error), _ func(int, int) (domain.MonthlyFinancialReport, error)) {
+func (m *mockTelegram) PollForCommands(_ func() ([]domain.Medicine, []domain.StockEntry, error), _ func(int, int) (domain.MonthlyFinancialReport, error)) {
 	// no-op
 }
 
