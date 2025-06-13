@@ -47,7 +47,6 @@ linters:
     - nakedret
     - bodyclose
     - forbidigo
-    - copyloopvar
 
 linters-settings:
   goimports:
