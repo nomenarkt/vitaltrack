@@ -45,7 +45,7 @@ type httpTelegram struct {
 }
 
 func (h *httpTelegram) SendTelegramMessage(msg string) error {
-	resp, err := http.PostForm(h.url, url.Values{"text": {msg}})
+	resp, err := http.PostForm(h.url, url.Values{"text": []string{msg}})
 	if err != nil {
 		return err
 	}
