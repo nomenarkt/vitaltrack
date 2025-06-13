@@ -4,6 +4,7 @@ package server
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"time"
 
@@ -67,7 +68,9 @@ func SetupRoutes(
 				info.CurrentStock,
 				info.OutOfStockDate.Format("Jan 2, 2006"),
 			)
-			_ = telegramClient.SendTelegramMessage(alert)
+			if err := telegramClient.SendTelegramMessage(alert); err != nil {
+				log.Printf("telegram send error: %v", err)
+			}
 		}
 
 		return c.JSON(fiber.Map{
