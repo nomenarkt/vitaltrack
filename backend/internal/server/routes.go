@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
+	fiber "github.com/gofiber/fiber/v2"
 	"github.com/nomenarkt/vitaltrack/backend/internal/domain"
 	"github.com/nomenarkt/vitaltrack/backend/internal/domain/ports"
 	"github.com/nomenarkt/vitaltrack/backend/internal/usecase"
