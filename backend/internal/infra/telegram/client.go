@@ -165,6 +165,12 @@ func (c *Client) PollForCommands(
 }
 
 func (c *Client) handleStockCommand(chatID int64, fetchData func() ([]domain.Medicine, []domain.StockEntry, error)) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("‼️ recovered from /stock crash: %v", r)
+		}
+	}()
+
 	meds, entries, err := fetchData()
 	if err != nil {
 		if err := c.sendTo(chatID, "\u26a0\ufe0f Failed to fetch stock data."); err != nil {
@@ -174,6 +180,17 @@ func (c *Client) handleStockCommand(chatID int64, fetchData func() ([]domain.Med
 	}
 
 	log.Printf("📦 meds: %d, entries: %d", len(meds), len(entries))
+
+	var validEntries []domain.StockEntry
+	skipped := 0
+	for _, e := range entries {
+		if e.Date.IsZero() || e.MedicineID == "" || e.Quantity <= 0 {
+			log.Printf("⚠️ skipping invalid stock entry: %+v", e)
+			skipped++
+			continue
+		}
+		validEntries = append(validEntries, e)
+	}
 	if len(meds) == 0 {
 		if err := c.sendTo(chatID, "\u26a0\ufe0f No medicine or stock data found."); err != nil {
 			log.Printf("failed to send /stock response: %v", err)
@@ -189,7 +206,7 @@ func (c *Client) handleStockCommand(chatID int64, fetchData func() ([]domain.Med
 	}
 	var rows []Row
 	for _, m := range meds {
-		stock := stockcalc.CurrentStockAt(m, entries, now)
+		stock := stockcalc.CurrentStockAt(m, validEntries, now)
 		if m.DailyDose == 0 || stock <= 0 {
 			continue
 		}
@@ -214,6 +231,9 @@ func (c *Client) handleStockCommand(chatID int64, fetchData func() ([]domain.Med
 	}
 
 	msg := "*Out-of-Stock Forecast*\n\n```text\n" + strings.Join(lines, "\n") + "\n```"
+	if skipped > 0 {
+		msg += "\n\u26a0\ufe0f Some records were skipped due to data issues."
+	}
 	if err := c.sendTo(chatID, msg); err != nil {
 		log.Printf("failed to send /stock response: %v", err)
 	} else {

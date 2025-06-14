@@ -331,3 +331,40 @@ func TestSendTo_escapesMarkdown(t *testing.T) {
 		t.Errorf("expected %q, got %q", expected, (*msgs)[0])
 	}
 }
+
+func TestHandleStockCommand_invalidEntriesSkipped(t *testing.T) {
+	srv, msgs := newTestServer(t)
+	defer srv.Close()
+
+	now := time.Now().AddDate(0, 0, -1)
+	meds := []domain.Medicine{{ID: "sk1", Name: "SkipMed", StartDate: domain.NewFlexibleDate(now), InitialStock: 0, DailyDose: 1, UnitPerBox: 10}}
+	entries := []domain.StockEntry{
+		{MedicineID: "", Quantity: 1, Unit: "box", Date: domain.NewFlexibleDate(now)},
+		{MedicineID: "sk1", Quantity: 1, Unit: "box", Date: domain.NewFlexibleDate(now)},
+		{MedicineID: "sk1", Quantity: -2, Unit: "pill", Date: domain.FlexibleDate{}},
+	}
+	fetch := func() ([]domain.Medicine, []domain.StockEntry, error) { return meds, entries, nil }
+
+	var logBuf bytes.Buffer
+	orig := log.Writer()
+	log.SetOutput(&logBuf)
+	defer log.SetOutput(orig)
+
+	c := &Client{Token: "tok", ChatID: "1", baseURL: srv.URL}
+	c.handleStockCommand(22, fetch)
+
+	if len(*msgs) == 0 {
+		t.Fatalf("no telegram message sent")
+	}
+	msg := (*msgs)[0]
+	if !strings.Contains(msg, util.EscapeMarkdown("*Out-of-Stock Forecast*")) {
+		t.Errorf("expected forecast message, got %q", msg)
+	}
+	warn := util.EscapeMarkdown("\u26a0\ufe0f Some records were skipped due to data issues.")
+	if !strings.Contains(msg, warn) {
+		t.Errorf("expected warning, got %q", msg)
+	}
+	if !strings.Contains(logBuf.String(), "skipping invalid stock entry") {
+		t.Errorf("expected log of skipped entry")
+	}
+}
