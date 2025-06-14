@@ -53,3 +53,10 @@ func NewApp() *fiber.App {
 
 	return app
 }
+
+// Build initializes the application and returns the Fiber app and its dependencies.
+func Build() (*fiber.App, Dependencies) {
+	app := fiber.New()
+	deps := Init()
+	return app, deps
+}
