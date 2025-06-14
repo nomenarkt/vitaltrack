@@ -2,6 +2,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"os"
 
@@ -16,7 +17,10 @@ func main() {
 		log.Printf("godotenv load: %v", err)
 	}
 
-	app := di.NewApp()
+	ctx := context.Background()
+
+	app, deps := di.Build()
+	go di.StartTelegramPolling(ctx, deps)
 
 	if err := app.Listen(":8787"); err != nil {
 		log.Printf("❌ Server failed to start: %v", err)
