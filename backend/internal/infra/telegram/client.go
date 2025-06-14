@@ -145,11 +145,15 @@ func (c *Client) PollForCommands(
 
 		for _, update := range updates.Result {
 			lastUpdateID = update.UpdateID
-			switch {
-			case update.Message.Text == "/stock":
+
+			// Extract command ignoring bot username (e.g. /stock@BotName)
+			cmd := strings.Split(update.Message.Text, "@")[0]
+
+			switch cmd {
+			case "/stock":
 				log.Printf("%s", "🟡 /stock command triggered")
 				go c.handleStockCommand(update.Message.Chat.ID, fetchData)
-			case strings.HasPrefix(update.Message.Text, "/finance"):
+			case "/finance":
 				log.Printf("%s", "🟡 /finance command triggered")
 				year, month := time.Now().Year(), time.Now().Month()
 				parts := strings.Fields(update.Message.Text)
