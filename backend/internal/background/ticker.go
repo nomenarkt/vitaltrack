@@ -16,7 +16,7 @@ import (
 // interval and sends Telegram alerts when medicines are running low. The
 // returned function stops the ticker.
 func StartStockAlertTicker(ctx context.Context, deps di.Dependencies, interval time.Duration, nowFn func() time.Time) (stop func()) {
-	deps.Logger.Info(ctx, "alert ticker started", "interval", interval)
+	deps.Logger.Info(ctx, fmt.Sprintf("🟢 Ticker started with interval %s", interval))
 	stopCh := make(chan struct{})
 	go func() {
 		ticker := time.NewTicker(interval)
