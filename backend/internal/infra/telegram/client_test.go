@@ -52,13 +52,13 @@ func TestHandleStockCommand(t *testing.T) {
 		{
 			name:    "all_good",
 			meds:    []domain.Medicine{{ID: "m2", Name: "Med2", StartDate: domain.NewFlexibleDate(now), InitialStock: 0, DailyDose: 1, UnitPerBox: 10}},
-			entries: []domain.StockEntry{{MedicineID: "m2", Quantity: 1.0, Unit: "box", Date: domain.NewFlexibleDate(now)}},
+			entries: []domain.StockEntry{{MedicineID: []string{"m2"}, Quantity: 1.0, Unit: "box", Date: domain.NewFlexibleDate(now)}},
 			expect:  "*Out-of-Stock Forecast*",
 		},
 		{
 			name:    "forecast",
 			meds:    []domain.Medicine{{ID: "m3", Name: "Med3", StartDate: domain.NewFlexibleDate(now), InitialStock: 10, DailyDose: 1, UnitPerBox: 10}},
-			entries: []domain.StockEntry{{MedicineID: "m3", Quantity: 1.0, Unit: "box", Date: domain.NewFlexibleDate(now)}},
+			entries: []domain.StockEntry{{MedicineID: []string{"m3"}, Quantity: 1.0, Unit: "box", Date: domain.NewFlexibleDate(now)}},
 			expect:  "*Out-of-Stock Forecast*",
 		},
 	}
@@ -125,7 +125,7 @@ func TestHandleStockCommand_withFloatEntries(t *testing.T) {
 
 	now := time.Now().AddDate(0, 0, -1)
 	meds := []domain.Medicine{{ID: "m5", Name: "FloatMed", StartDate: domain.NewFlexibleDate(now), InitialStock: 0, DailyDose: 1, UnitPerBox: 10}}
-	entries := []domain.StockEntry{{MedicineID: "m5", Quantity: 0.75, Unit: "box", Date: domain.NewFlexibleDate(now)}}
+	entries := []domain.StockEntry{{MedicineID: []string{"m5"}, Quantity: 0.75, Unit: "box", Date: domain.NewFlexibleDate(now)}}
 	fetch := func() ([]domain.Medicine, []domain.StockEntry, error) {
 		return meds, entries, nil
 	}
@@ -150,7 +150,7 @@ func TestHandleStockCommand_zeroDose(t *testing.T) {
 
 	now := time.Now().AddDate(0, 0, -1)
 	meds := []domain.Medicine{{ID: "m6", Name: "ZeroDose", StartDate: domain.NewFlexibleDate(now), InitialStock: 10, DailyDose: 0, UnitPerBox: 10}}
-	entries := []domain.StockEntry{{MedicineID: "m6", Quantity: 1.0, Unit: "box", Date: domain.NewFlexibleDate(now)}}
+	entries := []domain.StockEntry{{MedicineID: []string{"m6"}, Quantity: 1.0, Unit: "box", Date: domain.NewFlexibleDate(now)}}
 	fetch := func() ([]domain.Medicine, []domain.StockEntry, error) {
 		return meds, entries, nil
 	}
@@ -212,9 +212,9 @@ func TestHandleStockCommand_refillAppliedCumulatively(t *testing.T) {
 	now := time.Now().UTC().Truncate(24 * time.Hour)
 	start := now.AddDate(0, 0, -5)
 	entries := []domain.StockEntry{
-		{MedicineID: "mref", Quantity: 1, Unit: "box", Date: domain.NewFlexibleDate(start.AddDate(0, 0, 1))},
-		{MedicineID: "mref", Quantity: 1, Unit: "box", Date: domain.NewFlexibleDate(start.AddDate(0, 0, 2))},
-		{MedicineID: "mref", Quantity: 1, Unit: "box", Date: domain.NewFlexibleDate(start.AddDate(0, 0, 3))},
+		{MedicineID: []string{"mref"}, Quantity: 1, Unit: "box", Date: domain.NewFlexibleDate(start.AddDate(0, 0, 1))},
+		{MedicineID: []string{"mref"}, Quantity: 1, Unit: "box", Date: domain.NewFlexibleDate(start.AddDate(0, 0, 2))},
+		{MedicineID: []string{"mref"}, Quantity: 1, Unit: "box", Date: domain.NewFlexibleDate(start.AddDate(0, 0, 3))},
 	}
 	meds := []domain.Medicine{{ID: "mref", Name: "Refill", StartDate: domain.NewFlexibleDate(start), InitialStock: 0, DailyDose: 1, UnitPerBox: 10}}
 	fetch := func() ([]domain.Medicine, []domain.StockEntry, error) { return meds, entries, nil }
@@ -339,9 +339,9 @@ func TestHandleStockCommand_invalidEntriesSkipped(t *testing.T) {
 	now := time.Now().AddDate(0, 0, -1)
 	meds := []domain.Medicine{{ID: "sk1", Name: "SkipMed", StartDate: domain.NewFlexibleDate(now), InitialStock: 0, DailyDose: 1, UnitPerBox: 10}}
 	entries := []domain.StockEntry{
-		{MedicineID: "", Quantity: 1, Unit: "box", Date: domain.NewFlexibleDate(now)},
-		{MedicineID: "sk1", Quantity: 1, Unit: "box", Date: domain.NewFlexibleDate(now)},
-		{MedicineID: "sk1", Quantity: -2, Unit: "pill", Date: domain.FlexibleDate{}},
+		{MedicineID: []string{""}, Quantity: 1, Unit: "box", Date: domain.NewFlexibleDate(now)},
+		{MedicineID: []string{"sk1"}, Quantity: 1, Unit: "box", Date: domain.NewFlexibleDate(now)},
+		{MedicineID: []string{"sk1"}, Quantity: -2, Unit: "pill", Date: domain.FlexibleDate{}},
 	}
 	fetch := func() ([]domain.Medicine, []domain.StockEntry, error) { return meds, entries, nil }
 

@@ -18,7 +18,7 @@ type Medicine struct {
 // StockEntry records a consumption or purchase event for a medicine.
 type StockEntry struct {
 	ID         string       `json:"id"`
-	MedicineID string       `json:"medicine_id"`
+	MedicineID []string     `json:"medicine_id"`
 	Quantity   float64      `json:"quantity"`
 	Unit       string       `json:"unit"` // "box" or "pill"
 	Date       FlexibleDate `json:"date"`

@@ -117,7 +117,7 @@ func SetupRoutes(
 			}
 
 			entry := domain.StockEntry{
-				MedicineID: id,
+				MedicineID: []string{id},
 				Quantity:   req.Quantity,
 				Unit:       req.Unit,
 				Date:       domain.FlexibleDate{Time: parsedDate},

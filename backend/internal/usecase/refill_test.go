@@ -38,8 +38,8 @@ func TestCheckAndAlertNewRefills(t *testing.T) {
 
 	med := domain.Medicine{ID: "m1", Name: "Med1", UnitPerBox: 28}
 	twoEntries := []domain.StockEntry{
-		{MedicineID: "m1", Quantity: 1, Unit: "box", Date: domain.NewFlexibleDate(now)},
-		{MedicineID: "m1", Quantity: 10, Unit: "pill", Date: domain.NewFlexibleDate(now)},
+		{MedicineID: []string{"m1"}, Quantity: 1, Unit: "box", Date: domain.NewFlexibleDate(now)},
+		{MedicineID: []string{"m1"}, Quantity: 10, Unit: "pill", Date: domain.NewFlexibleDate(now)},
 	}
 
 	tests := []struct {
@@ -63,19 +63,19 @@ func TestCheckAndAlertNewRefills(t *testing.T) {
 		{
 			name:        "zero_quantity",
 			meds:        []domain.Medicine{med},
-			entries:     []domain.StockEntry{{MedicineID: "m1", Quantity: 0, Unit: "box", Date: domain.NewFlexibleDate(now)}},
+			entries:     []domain.StockEntry{{MedicineID: []string{"m1"}, Quantity: 0, Unit: "box", Date: domain.NewFlexibleDate(now)}},
 			expectCount: 0,
 		},
 		{
 			name:        "missing_medicine_id",
 			meds:        []domain.Medicine{med},
-			entries:     []domain.StockEntry{{MedicineID: "", Quantity: 2, Unit: "box", Date: domain.NewFlexibleDate(now)}},
+			entries:     []domain.StockEntry{{MedicineID: []string{""}, Quantity: 2, Unit: "box", Date: domain.NewFlexibleDate(now)}},
 			expectCount: 0,
 		},
 		{
 			name:        "already_alerted_today",
 			meds:        []domain.Medicine{{ID: "m1", Name: "Med1", UnitPerBox: 28, LastAlertedDate: &domain.FlexibleDate{Time: now}}},
-			entries:     []domain.StockEntry{{MedicineID: "m1", Quantity: 1, Unit: "box", Date: domain.NewFlexibleDate(now)}},
+			entries:     []domain.StockEntry{{MedicineID: []string{"m1"}, Quantity: 1, Unit: "box", Date: domain.NewFlexibleDate(now)}},
 			expectCount: 0,
 		},
 	}

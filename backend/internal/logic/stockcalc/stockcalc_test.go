@@ -30,7 +30,7 @@ func TestCurrentStockAt_WithRefillOnToday(t *testing.T) {
 
 	entries := []domain.StockEntry{
 		{
-			MedicineID: "med123",
+			MedicineID: []string{"med123"},
 			Quantity:   1.0,
 			Unit:       "box",
 			Date:       domain.NewFlexibleDate(now),
@@ -61,10 +61,10 @@ func TestCurrentStockAt_WithMultipleEntryDates(t *testing.T) {
 	}
 
 	entries := []domain.StockEntry{
-		{MedicineID: "med1", Quantity: 1.0, Unit: "box", Date: domain.NewFlexibleDate(today)},                    // +10
-		{MedicineID: "med1", Quantity: 5.0, Unit: "pill", Date: domain.NewFlexibleDate(today)},                   // +5
-		{MedicineID: "med1", Quantity: 5.0, Unit: "pill", Date: domain.NewFlexibleDate(today.AddDate(0, 0, 1))},  // future: ignored
-		{MedicineID: "med1", Quantity: 5.0, Unit: "pill", Date: domain.NewFlexibleDate(today.AddDate(0, 0, -1))}, // past: included
+		{MedicineID: []string{"med1"}, Quantity: 1.0, Unit: "box", Date: domain.NewFlexibleDate(today)},                    // +10
+		{MedicineID: []string{"med1"}, Quantity: 5.0, Unit: "pill", Date: domain.NewFlexibleDate(today)},                   // +5
+		{MedicineID: []string{"med1"}, Quantity: 5.0, Unit: "pill", Date: domain.NewFlexibleDate(today.AddDate(0, 0, 1))},  // future: ignored
+		{MedicineID: []string{"med1"}, Quantity: 5.0, Unit: "pill", Date: domain.NewFlexibleDate(today.AddDate(0, 0, -1))}, // past: included
 	}
 
 	stock := stockcalc.CurrentStockAt(med, entries, today)
@@ -106,7 +106,7 @@ func TestCurrentStockAt_WithRFC3339StartDate(t *testing.T) {
 
 	entries := []domain.StockEntry{
 		{
-			MedicineID: "medRFC",
+			MedicineID: []string{"medRFC"},
 			Quantity:   1.0,
 			Unit:       "box",
 			Date:       domain.NewFlexibleDate(now),
@@ -137,7 +137,7 @@ func TestCurrentStockAt_EntryDateRFC3339Match(t *testing.T) {
 	rfcDate := time.Date(2025, 6, 4, 12, 0, 0, 0, time.UTC)
 
 	entries := []domain.StockEntry{
-		{MedicineID: "med2", Quantity: 1.0, Unit: "box", Date: domain.NewFlexibleDate(rfcDate)},
+		{MedicineID: []string{"med2"}, Quantity: 1.0, Unit: "box", Date: domain.NewFlexibleDate(rfcDate)},
 	}
 
 	got := stockcalc.CurrentStockAt(med, entries, now)

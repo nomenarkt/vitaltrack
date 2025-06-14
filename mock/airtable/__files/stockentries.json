@@ -3,7 +3,7 @@
     {
       "id": "entry1",
       "fields": {
-        "medicine_id": "ok1",
+        "medicine_id": ["ok1"],
         "quantity": 2,
         "unit": "box",
         "date": "2025-06-04"

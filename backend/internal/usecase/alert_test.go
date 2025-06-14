@@ -106,7 +106,7 @@ func TestCheckAndAlertLowStock_Table(t *testing.T) {
 			},
 			entries: []domain.StockEntry{
 				{
-					MedicineID: "medr",
+					MedicineID: []string{"medr"},
 					Quantity:   2,
 					Unit:       "box",
 					Date:       domain.NewFlexibleDate(now),
