@@ -91,8 +91,11 @@ func (s *StockChecker) CheckAndAlertLowStock() error {
 	// 👇 Refill notification logic
 	refillsToday := map[string][]domain.StockEntry{}
 	for _, entry := range entries {
+		if len(entry.MedicineID) == 0 {
+			continue
+		}
 		if entry.Date.UTC().Format("2006-01-02") == now.Format("2006-01-02") {
-			refillsToday[entry.MedicineID] = append(refillsToday[entry.MedicineID], entry)
+			refillsToday[entry.MedicineID[0]] = append(refillsToday[entry.MedicineID[0]], entry)
 		}
 	}
 

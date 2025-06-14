@@ -159,7 +159,7 @@ func (c *Client) CreateStockEntry(entry domain.StockEntry) error {
 
 	payload := map[string]any{
 		"fields": map[string]any{
-			"medicine_id": []string{entry.MedicineID},
+			"medicine_id": entry.MedicineID,
 			"quantity":    entry.Quantity,
 			"unit":        entry.Unit,
 			"date":        entry.Date.Format("2006-01-02"),

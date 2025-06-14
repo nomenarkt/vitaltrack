@@ -27,7 +27,7 @@ func CurrentStockAt(m domain.Medicine, entries []domain.StockEntry, now time.Tim
 
 	// Apply refills that occurred up to now (inclusive)
 	for _, e := range entries {
-		if e.MedicineID != m.ID {
+		if len(e.MedicineID) == 0 || e.MedicineID[0] != m.ID {
 			continue
 		}
 		if e.Date.IsZero() {

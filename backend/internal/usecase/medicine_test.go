@@ -47,7 +47,7 @@ func TestGetStockInfo(t *testing.T) {
 		},
 		{
 			name:      "withEntries",
-			repo:      mockRepo{meds: []domain.Medicine{med}, entries: []domain.StockEntry{{MedicineID: "m1", Quantity: 1, Unit: "box", Date: domain.NewFlexibleDate(now)}}},
+			repo:      mockRepo{meds: []domain.Medicine{med}, entries: []domain.StockEntry{{MedicineID: []string{"m1"}, Quantity: 1, Unit: "box", Date: domain.NewFlexibleDate(now)}}},
 			wantStock: 17,
 			wantDate:  time.Date(2025, 6, 21, 0, 0, 0, 0, time.UTC),
 		},

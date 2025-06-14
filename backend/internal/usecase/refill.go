@@ -33,14 +33,14 @@ func (s *StockChecker) CheckAndAlertNewRefills() error {
 	today := now.Format("2006-01-02")
 
 	for _, e := range entries {
-		if e.MedicineID == "" || e.Quantity <= 0 || e.Date.IsZero() {
+		if len(e.MedicineID) == 0 || e.Quantity <= 0 || e.Date.IsZero() {
 			continue
 		}
 		if e.Date.UTC().Format("2006-01-02") != today {
 			continue
 		}
 
-		med, ok := medMap[e.MedicineID]
+		med, ok := medMap[e.MedicineID[0]]
 		if !ok {
 			continue
 		}

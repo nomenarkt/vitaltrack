@@ -184,7 +184,7 @@ func (c *Client) handleStockCommand(chatID int64, fetchData func() ([]domain.Med
 	var validEntries []domain.StockEntry
 	skipped := 0
 	for _, e := range entries {
-		if e.Date.IsZero() || e.MedicineID == "" || e.Quantity <= 0 {
+		if e.Date.IsZero() || len(e.MedicineID) == 0 || e.Quantity <= 0 {
 			log.Printf("⚠️ skipping invalid stock entry: %+v", e)
 			skipped++
 			continue
