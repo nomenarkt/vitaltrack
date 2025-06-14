@@ -72,6 +72,12 @@ func StartStockAlertTicker(ctx context.Context, deps di.Dependencies, interval t
 				}
 			}
 
+			if deps.StockChecker != nil {
+				if err := deps.StockChecker.CheckAndAlertNewRefills(); err != nil {
+					deps.Logger.Error(ctx, "refill check failed", "error", err)
+				}
+			}
+
 			deps.Logger.Info(ctx, "alert ticker completed")
 
 			select {
