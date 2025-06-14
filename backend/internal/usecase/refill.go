@@ -50,7 +50,7 @@ func (s *StockChecker) CheckAndAlertNewRefills() error {
 
 		qty := e.Quantity
 		if e.Unit == "box" {
-			qty = qty * med.UnitPerBox
+			qty *= med.UnitPerBox
 		}
 
 		msg := fmt.Sprintf(
