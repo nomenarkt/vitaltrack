@@ -2,13 +2,12 @@
 package main
 
 import (
-	"context"
 	"log"
 	"os"
 
 	"github.com/joho/godotenv"
 
-	_ "github.com/nomenarkt/vitaltrack/backend/internal/background"
+	"github.com/nomenarkt/vitaltrack/backend/internal/background"
 	"github.com/nomenarkt/vitaltrack/backend/internal/di"
 )
 
@@ -17,10 +16,9 @@ func main() {
 		log.Printf("godotenv load: %v", err)
 	}
 
-	ctx := context.Background()
+	di.StartTickerFunc = background.StartStockAlertTicker
 
-	app, deps := di.Build()
-	go di.StartTelegramPolling(ctx, deps)
+	app := di.NewApp()
 
 	if err := app.Listen(":8787"); err != nil {
 		log.Printf("❌ Server failed to start: %v", err)
