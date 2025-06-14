@@ -173,6 +173,7 @@ func (c *Client) handleStockCommand(chatID int64, fetchData func() ([]domain.Med
 
 	meds, entries, err := fetchData()
 	if err != nil {
+		log.Printf("❌ /stock fetchData error: %v", err)
 		if err := c.sendTo(chatID, "\u26a0\ufe0f Failed to fetch stock data."); err != nil {
 			log.Printf("failed to send /stock response: %v", err)
 		}
